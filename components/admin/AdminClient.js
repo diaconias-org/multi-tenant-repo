@@ -5,6 +5,7 @@ import { signOut }     from 'next-auth/react';
 import { useRouter }   from 'next/navigation';
 import Link            from 'next/link';
 import { CheckCircle2, XCircle, Clock } from 'lucide-react';
+import { Badge }        from '@/components/ui/badge';
 import styles          from './admin.module.css';
 
 export default function AdminClient({ comprovantes, usuarioNome, usuarioEmail }) {
@@ -115,9 +116,9 @@ export default function AdminClient({ comprovantes, usuarioNome, usuarioEmail })
                       )}
                     </td>
                     <td>
-                      {c.status === 'valido' && <span className={styles.badgeValido}><CheckCircle2 size={14}/> Válido</span>}
-                      {c.status === 'invalido' && <span className={styles.badgeInvalido}><XCircle size={14}/> Inválido</span>}
-                      {(!c.status || c.status === 'pendente') && <span className={styles.badgePendente}><Clock size={14}/> Pendente</span>}
+                      {c.status === 'valido' && <Badge variant="success"><CheckCircle2 size={13}/> Válido</Badge>}
+                      {c.status === 'invalido' && <Badge variant="danger"><XCircle size={13}/> Inválido</Badge>}
+                      {(!c.status || c.status === 'pendente') && <Badge variant="warning"><Clock size={13}/> Pendente</Badge>}
                     </td>
                     <td>
                       <div className={styles.acoesStatus}>
@@ -129,7 +130,7 @@ export default function AdminClient({ comprovantes, usuarioNome, usuarioEmail })
                           <CheckCircle2 size={16} />
                         </button>
                         <button 
-                          className={styles.btnInvalidar}
+                          className={styles.btnInvalidar} 
                           title="Marcar como Inválido" 
                           onClick={() => setConfirmDialog({ id: c.id, nome: c.nome, action: 'invalido' })}
                         >

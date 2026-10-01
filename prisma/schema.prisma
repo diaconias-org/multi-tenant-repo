@@ -1,0 +1,57 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// ──────────────────────────────────────────────
+// MULTI-TENANT: Organizações / Paróquias
+// ──────────────────────────────────────────────
+model Tenant {
+  id           String        @id // ex: 'curralinhos'
+  nome         String
+  slug         String?       @unique
+  logo_url     String?
+  criado_em    DateTime      @default(now())
+  comprovantes Comprovante[]
+  usuarios     Usuario[]
+
+  @@map("tenants")
+}
+
+// ──────────────────────────────────────────────
+// COMPROVANTES DE DÍZIMO
+// ──────────────────────────────────────────────
+model Comprovante {
+  id         Int       @id @default(autoincrement())
+  tenant_id  String
+  tenant     Tenant    @relation(fields: [tenant_id], references: [id], onDelete: Cascade)
+  nome       String
+  telefone   String?
+  foto_url   String?
+  observacao String?
+  status     String    @default("pendente")
+  criado_em  DateTime  @default(now())
+
+  @@index([tenant_id])
+  @@map("comprovantes")
+}
+
+// ──────────────────────────────────────────────
+// USUÁRIOS ADMINISTRATIVOS
+// ──────────────────────────────────────────────
+model Usuario {
+  id         Int       @id @default(autoincrement())
+  tenant_id  String
+  tenant     Tenant    @relation(fields: [tenant_id], references: [id], onDelete: Cascade)
+  nome       String
+  email      String    @unique
+  senha_hash String
+  criado_em  DateTime  @default(now())
+
+  @@index([tenant_id])
+  @@map("usuarios")
+}

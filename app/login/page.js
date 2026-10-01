@@ -18,21 +18,24 @@ export default function LoginPage() {
     setErro('');
     setLoading(true);
 
-    // signIn() do NextAuth chama POST /api/auth/signin internamente,
-    // verifica as credenciais via authorize() em auth.js,
-    // e cria o cookie JWT se válido.
-    const result = await signIn('credentials', {
-      email,
-      password: senha,
-      redirect: false, // não redireciona automaticamente — tratamos aqui
-    });
+    try {
+      const result = await signIn('credentials', {
+        email,
+        password: senha,
+        redirect: false,
+      });
 
-    setLoading(false);
-
-    if (result?.error) {
-      setErro('Email ou senha incorretos.');
-    } else {
-      router.push('/admin');
+      if (result?.error) {
+        setErro('Email ou senha incorretos.');
+        setLoading(false);
+      } else {
+        // Redirecionamento completo para sincronizar os cookies de sessão com o servidor
+        // eslint-disable-next-line @next/next/no-location-assign-relative-destination
+        window.location.href = '/admin';
+      }
+    } catch (err) {
+      setErro('Erro de conexão ao tentar entrar.');
+      setLoading(false);
     }
   }
 

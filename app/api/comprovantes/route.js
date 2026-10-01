@@ -1,98 +1,70 @@
 /**
  * app/api/comprovantes/route.js
  * 
- * POST /api/comprovantes
- * Recebe o formulário multipart (nome, nascimento, foto) do fiel,
- * faz upload da imagem para o Vercel Blob e salva os dados no banco.
+ * Camada de Apresentação (Route Handlers / API).
+ * Consumida por:
+ * - Formulário web (/comprovante)
+ * - Futuros clientes móveis (React Native / Flutter)
+ * - Integrações externas
  */
 import { NextResponse } from 'next/server';
-import { put } from '@vercel/blob';
-import { initDb, inserirComprovante, listarComprovantes } from '@/lib/db';
-import { writeFile, mkdir } from 'fs/promises';
-import { join } from 'path';
+import { criarComprovante, listarComprovantes } from '@/services/comprovante.service';
+import { resolverTenantDaRequisicao, validarTenantAtivo } from '@/services/tenant.service';
+import { withTenant } from '@/lib/prisma';
+import { AppError } from '@/lib/errors';
 
-// GET — lista todos os comprovantes (usado pelo painel admin)
+// GET — lista os comprovantes da paróquia/tenant identificada
 export async function GET(request) {
   try {
-    await initDb();
-    const comprovantes = await listarComprovantes();
-    return NextResponse.json({ comprovantes });
+    const tenant = await resolverTenantDaRequisicao(request, { fallbackParaDefault: true });
+    
+    // Executa no contexto do tenant
+    const comprovantes = await withTenant(tenant.id, async () => {
+      return listarComprovantes({ tenantId: tenant.id });
+    });
+
+    return NextResponse.json({ comprovantes, tenant: { id: tenant.id, nome: tenant.nome } });
   } catch (error) {
     console.error('Erro ao listar comprovantes:', error);
-    return NextResponse.json({ erro: 'Erro interno' }, { status: 500 });
+    const status = error instanceof AppError ? error.statusCode : 500;
+    return NextResponse.json({ erro: error.message || 'Erro interno' }, { status });
   }
 }
 
-// POST — recebe e salva um novo comprovante
+// POST — recebe multipart/form-data e cria um novo comprovante no tenant validado
 export async function POST(request) {
   try {
-    await initDb();
-
     const formData = await request.formData();
-    const nome       = formData.get('nome')?.toString().trim();
-    const telefone   = formData.get('telefone')?.toString().trim() || null;
-    const foto       = formData.get('foto'); // File ou null
+    const nome      = formData.get('nome');
+    const telefone  = formData.get('telefone');
+    const foto      = formData.get('foto');
+    const formTenant = formData.get('tenant_id');
 
-    // Validação básica
-    if (!nome) {
-      return NextResponse.json(
-        { erro: 'O campo nome é obrigatório.' },
-        { status: 400 }
-      );
-    }
-    if (!foto || foto.size === 0) {
-      return NextResponse.json(
-        { erro: 'O anexo do comprovante é obrigatório.' },
-        { status: 400 }
-      );
+    // 1. Identifica e valida o tenant (por form, header, subdomínio ou fallback)
+    let tenant;
+    if (formTenant) {
+      tenant = await validarTenantAtivo(formTenant);
+    } else {
+      tenant = await resolverTenantDaRequisicao(request, { fallbackParaDefault: true });
     }
 
-    let fotoUrl = null;
+    // 2. Executa a criação no contexto assíncrono blindado do tenant
+    const result = await withTenant(tenant.id, async () => {
+      return criarComprovante({
+        nome,
+        telefone,
+        foto,
+        tenantId: tenant.id,
+      });
+    });
 
-    // Faz upload da foto se existir
-    if (foto && foto.size > 0) {
-      if (foto.size > 10 * 1024 * 1024) {
-        return NextResponse.json({ erro: 'A imagem não pode ultrapassar 10MB.' }, { status: 400 });
-      }
-
-      const nomeLimpo = foto.name.replace(/[^a-zA-Z0-9.-]/g, '_');
-      const nomeArquivo = `comprovantes/${Date.now()}-${nomeLimpo}`;
-
-      // Vercel Blob (Produção - se configurado)
-      if (process.env.BLOB_READ_WRITE_TOKEN) {
-        const blob = await put(nomeArquivo, foto, { access: 'public' });
-        fotoUrl = blob.url;
-      } 
-      // Fallback
-      else {
-        const bytes = await foto.arrayBuffer();
-        const buffer = Buffer.from(bytes);
-
-        // Se estivermos na Vercel (onde /public é read-only), salva como Base64
-        if (process.env.VERCEL || process.env.NODE_ENV === 'production') {
-          const base64 = buffer.toString('base64');
-          const mimeType = foto.type || 'image/jpeg';
-          fotoUrl = `data:${mimeType};base64,${base64}`;
-        } 
-        // Se estivermos em ambiente local, salva no disco (pasta public)
-        else {
-          const uploadDir = join(process.cwd(), 'public', 'uploads');
-          await mkdir(uploadDir, { recursive: true });
-          
-          const fileName = `${Date.now()}-${nomeLimpo}`;
-          const filePath = join(uploadDir, fileName);
-          await writeFile(filePath, buffer);
-          
-          fotoUrl = `/uploads/${fileName}`;
-        }
-      }
-    }
-
-    const id = await inserirComprovante({ nome, telefone, foto_url: fotoUrl });
-
-    return NextResponse.json({ sucesso: true, id: id.toString() }, { status: 201 });
+    return NextResponse.json({ ...result, tenant_id: tenant.id }, { status: 201 });
   } catch (error) {
     console.error('Erro ao salvar comprovante:', error);
-    return NextResponse.json({ erro: 'Erro interno ao salvar.' }, { status: 500 });
+    const status = error instanceof AppError ? error.statusCode : 500;
+    return NextResponse.json(
+      { erro: error.message || 'Erro interno ao salvar.' },
+      { status }
+    );
   }
 }

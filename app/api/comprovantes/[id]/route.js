@@ -1,6 +1,13 @@
+/**
+ * app/api/comprovantes/[id]/route.js
+ * 
+ * Camada de Apresentação (Route Handlers / API).
+ * Atualiza o status de validação de um comprovante existente.
+ */
 import { NextResponse } from 'next/server';
 import { auth } from '@/auth';
-import { atualizarStatusComprovante } from '@/lib/db';
+import { atualizarStatusComprovante } from '@/services/comprovante.service';
+import { AppError } from '@/lib/errors';
 
 export async function PATCH(request, { params }) {
   try {
@@ -14,19 +21,15 @@ export async function PATCH(request, { params }) {
     const body = await request.json();
     const { status } = body;
 
-    if (!id || !status) {
-      return NextResponse.json({ error: 'Faltam dados' }, { status: 400 });
-    }
-
-    if (!['pendente', 'valido', 'invalido'].includes(status)) {
-      return NextResponse.json({ error: 'Status inválido' }, { status: 400 });
-    }
-
-    await atualizarStatusComprovante(Number(id), status);
+    await atualizarStatusComprovante({ id, status });
 
     return NextResponse.json({ success: true });
   } catch (err) {
     console.error('Erro ao atualizar status:', err);
-    return NextResponse.json({ error: 'Erro interno' }, { status: 500 });
+    const statusCode = err instanceof AppError ? err.statusCode : 500;
+    return NextResponse.json(
+      { error: err.message || 'Erro interno' },
+      { status: statusCode }
+    );
   }
 }

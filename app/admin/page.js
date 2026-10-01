@@ -1,7 +1,7 @@
 import { auth }                             from '@/auth';
 import { redirect }                         from 'next/navigation';
-import { listarComprovantes, initDb }       from '@/lib/db';
-import AdminClient                          from './AdminClient';
+import { listarComprovantes }               from '@/services/comprovante.service';
+import AdminClient                          from '@/components/admin/AdminClient';
 
 export const metadata = {
   title: 'Painel Admin – Diaconia',
@@ -12,8 +12,7 @@ export default async function AdminPage() {
   const session = await auth();
   if (!session?.user) redirect('/login');
 
-  await initDb();
-  const comprovantes = await listarComprovantes();
+  const comprovantes = await listarComprovantes({ tenantId: session.user.tenant_id });
 
   return (
     <AdminClient

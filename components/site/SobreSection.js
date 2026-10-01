@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { ChevronDown, ChevronUp } from 'lucide-react';
-import styles from './home.module.css';
+import styles from '@/app/home.module.css';
 
 export default function SobreSection() {
   const [expanded, setExpanded] = useState(false);
@@ -15,7 +15,7 @@ export default function SobreSection() {
         
         <div className={`${styles.sobreContentWrapper} ${expanded ? styles.expanded : ''}`}>
           <div className={styles.sobreText}>
-            <p>O município de Curralinhos, localizado a 80 km de Teresina, foi criado em 1995. O nome "Curralinho" tem origem na cultura popular dos vaqueiros, que conduziam o gado até currais situados onde hoje é o Centro da Cidade. A agricultura familiar e a criação de caprinos, bovinos e suínos constituíam as principais fontes de sustento das famílias nas regiões conhecidas como Forquilha, Caldeirão e Pedra da Onça.</p>
+            <p>O município de Curralinhos, localizado a 80 km de Teresina, foi criado em 1995. O nome &quot;Curralinho&quot; tem origem na cultura popular dos vaqueiros, que conduziam o gado até currais situados onde hoje é o Centro da Cidade. A agricultura familiar e a criação de caprinos, bovinos e suínos constituíam as principais fontes de sustento das famílias nas regiões conhecidas como Forquilha, Caldeirão e Pedra da Onça.</p>
 
             <p>A partir da década de 1960, a população da área começou a crescer quando Raimundo Cícero Oliveira adquiriu uma grande quantidade de terras e fundou o primeiro comércio, ainda em território do município de Monsenhor Gil. Seu desejo era que ali se formasse a sede de uma cidade.</p>
 

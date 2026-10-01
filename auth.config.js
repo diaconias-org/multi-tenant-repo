@@ -22,6 +22,20 @@ export const authConfig = {
       if (isAdminRoute) return isLoggedIn; // /admin/* exige login
       return true;                          // resto é público
     },
+
+    jwt({ token, user }) {
+      if (user?.tenant_id) {
+        token.tenant_id = user.tenant_id;
+      }
+      return token;
+    },
+
+    session({ session, token }) {
+      if (token?.tenant_id && session.user) {
+        session.user.tenant_id = token.tenant_id;
+      }
+      return session;
+    },
   },
   providers: [], // os providers com bcrypt ficam em auth.js (Node.js only)
 };

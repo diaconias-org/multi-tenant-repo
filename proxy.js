@@ -1,20 +1,30 @@
 /**
- * proxy.js  (Next.js 16+ — substitui o antigo middleware.js)
- *
- * O Next.js 16 exige que a função exportada se chame "proxy" (ou default).
- * Usamos o NextAuth com a config edge-safe (auth.config.js) para
- * proteger as rotas /admin/*.
+ * proxy.js (Next.js 16+)
+ * Ponto de entrada único do Middleware no Next.js.
+ * 
+ * Orquestra a execução de middlewares modulares especializados:
+ * - authMiddleware:   Protege rotas restritas (/admin/*) via NextAuth
+ * - tenantMiddleware: Detecta a paróquia (subdomínio/URL) e injeta x-tenant-id
  */
-import NextAuth       from 'next-auth';
-import { authConfig } from './auth.config';
+import { authMiddleware }   from '@/lib/middlewares/auth.middleware';
+import { tenantMiddleware } from '@/lib/middlewares/tenant.middleware';
 
-const { auth } = NextAuth(authConfig);
-
-// ← Deve ser exportada como "proxy" no Next.js 16
 export async function proxy(request) {
-  return auth(request);
+  // 1. Valida autenticação (se não autorizado, retorna redirecionamento imediatamente)
+  const authResponse = await authMiddleware(request);
+  if (authResponse) {
+    return authResponse;
+  }
+
+  // 2. Injeta o tenant identificado na requisição
+  return tenantMiddleware(request);
 }
 
 export const config = {
-  matcher: ['/admin/:path*'],
+  matcher: [
+    /*
+     * Aplica em todas as rotas exceto arquivos estáticos
+     */
+    '/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp|css|js|woff|woff2)$).*)',
+  ],
 };

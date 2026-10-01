@@ -26,8 +26,8 @@ function YoutubeIcon({ size = 24, color = 'currentColor' }) {
   );
 }
 import styles from './home.module.css';
-import SobreSection from './SobreSection';
-import MemoriasSection from './MemoriasSection';
+import SobreSection from '@/components/site/SobreSection';
+import MemoriasSection from '@/components/site/MemoriasSection';
 
 export const metadata = {
   title: 'Diaconia Territorial São Raimundo Nonato — Curralinhos, PI',

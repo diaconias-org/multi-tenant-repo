@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
-import styles from './home.module.css';
+import styles from '@/app/home.module.css';
 
 const GALERIA = [
   '/galeria/IMG_4934.JPG.jpeg',

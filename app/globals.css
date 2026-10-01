@@ -1,41 +1,112 @@
+@import "tailwindcss";
+
 /* =================================================
    DIACONIA — globals.css
-   Design tokens e estilos base compartilhados.
+   Design tokens, Tailwind v4 e shadcn/ui.
+   Preparado para Multi-Tenant via CSS Variables.
    ================================================= */
 
-/* === TOKENS === */
-:root {
-  --font-inter:      'Inter', system-ui, sans-serif;
-  --font-cormorant:  'Cormorant Garamond', Georgia, serif;
+@layer base {
+  :root {
+    --font-inter: 'Inter', system-ui, sans-serif;
+    --font-cormorant: 'Cormorant Garamond', Georgia, serif;
 
-  --bordo:        #8b1a1a;
-  --bordo-dark:   #6a1212;
-  --bordo-light:  #b52020;
-  --gold:         #b89a5a;
-  --gold-light:   #c8b07a;
-  --cream:        #f5ede0;
-  --cream-mid:    #ede4d5;
-  --cream-dark:   #e0d3c0;
-  --white:        #ffffff;
-  --text:         #2c2010;
-  --text-mid:     #5a4a35;
-  --text-light:   #7a6a55;
-  --gray-border:  #d5c8b8;
+    /* Cores Institucionais Diaconia (Customizáveis por Tenant) */
+    --bordo: #8b1a1a;
+    --bordo-dark: #6a1212;
+    --bordo-light: #b52020;
+    --gold: #b89a5a;
+    --gold-light: #c8b07a;
+    --cream: #f5ede0;
+    --cream-mid: #ede4d5;
+    --cream-dark: #e0d3c0;
+    --white: #ffffff;
+    --text: #2c2010;
+    --text-mid: #5a4a35;
+    --text-light: #7a6a55;
+    --gray-border: #d5c8b8;
 
-  --radius-sm: 8px;
-  --radius-md: 14px;
-  --radius-lg: 22px;
+    /* Tokens shadcn/ui integrados à paleta da Diaconia */
+    --background: #f9f2e8;
+    --foreground: #2c2010;
 
-  --shadow-sm: 0 2px 10px rgba(80,40,10,.08);
-  --shadow-md: 0 6px 28px rgba(80,40,10,.13);
-  --shadow-lg: 0 18px 54px rgba(80,40,10,.18);
+    --card: #ffffff;
+    --card-foreground: #2c2010;
 
-  --transition: all .25s cubic-bezier(.4,0,.2,1);
+    --popover: #ffffff;
+    --popover-foreground: #2c2010;
+
+    --primary: #8b1a1a;
+    --primary-foreground: #ffffff;
+
+    --secondary: #f5ede0;
+    --secondary-foreground: #2c2010;
+
+    --muted: #ede4d5;
+    --muted-foreground: #7a6a55;
+
+    --accent: #b89a5a;
+    --accent-foreground: #ffffff;
+
+    --destructive: #b52020;
+    --destructive-foreground: #ffffff;
+
+    --border: #d5c8b8;
+    --input: #d5c8b8;
+    --ring: #8b1a1a;
+
+    --radius: 0.75rem;
+
+    --radius-sm: 8px;
+    --radius-md: 14px;
+    --radius-lg: 22px;
+
+    --shadow-sm: 0 2px 10px rgba(80, 40, 10, 0.08);
+    --shadow-md: 0 6px 28px rgba(80, 40, 10, 0.13);
+    --shadow-lg: 0 18px 54px rgba(80, 40, 10, 0.18);
+
+    --transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  }
 }
 
-/* === RESET === */
-*, ::before, ::after { box-sizing: border-box; margin: 0; padding: 0; }
-html { scroll-behavior: smooth; }
+@theme {
+  --color-bordo: var(--bordo);
+  --color-bordo-dark: var(--bordo-dark);
+  --color-bordo-light: var(--bordo-light);
+  --color-gold: var(--gold);
+  --color-gold-light: var(--gold-light);
+  --color-cream: var(--cream);
+  --color-cream-mid: var(--cream-mid);
+  --color-cream-dark: var(--cream-dark);
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+
+  --font-inter: var(--font-inter);
+  --font-cormorant: var(--font-cormorant);
+}
+
+/* === ESTILOS GLOBAIS COMPATÍVEIS === */
+html {
+  scroll-behavior: smooth;
+}
+
 body {
   font-family: var(--font-inter);
   background: linear-gradient(160deg, #f9f2e8 0%, #f0e6d3 50%, #ead9c5 100%);
@@ -44,8 +115,3 @@ body {
   font-size: 15px;
   line-height: 1.6;
 }
-a { text-decoration: none; color: inherit; }
-ul { list-style: none; }
-img { max-width: 100%; display: block; }
-input, select, button, textarea { font-family: inherit; }
-button { cursor: pointer; }
