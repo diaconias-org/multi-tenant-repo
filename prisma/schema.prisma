@@ -11,13 +11,15 @@ datasource db {
 // MULTI-TENANT: Organizações / Paróquias
 // ──────────────────────────────────────────────
 model Tenant {
-  id           String        @id // ex: 'curralinhos'
+  id           String             @id // ex: 'curralinhos'
   nome         String
-  slug         String?       @unique
+  slug         String?            @unique
   logo_url     String?
-  criado_em    DateTime      @default(now())
+  criado_em    DateTime           @default(now())
   comprovantes Comprovante[]
   usuarios     Usuario[]
+  categorias   CategoriaNoticia[]
+  noticias     Noticia[]
 
   @@map("tenants")
 }
@@ -54,4 +56,54 @@ model Usuario {
 
   @@index([tenant_id])
   @@map("usuarios")
+}
+
+// ──────────────────────────────────────────────
+// CATEGORIAS DE NOTÍCIAS
+// ──────────────────────────────────────────────
+model CategoriaNoticia {
+  id            Int       @id @default(autoincrement())
+  tenant_id     String
+  tenant        Tenant    @relation(fields: [tenant_id], references: [id], onDelete: Cascade)
+  nome          String
+  slug          String
+  descricao     String?
+  ativo         Boolean   @default(true)
+  criado_em     DateTime  @default(now())
+  atualizado_em DateTime  @updatedAt
+  noticias      Noticia[]
+
+  @@unique([tenant_id, slug])
+  @@index([tenant_id])
+  @@map("categorias_noticia")
+}
+
+// ──────────────────────────────────────────────
+// NOTÍCIAS E ARTIGOS
+// ──────────────────────────────────────────────
+model Noticia {
+  id            Int               @id @default(autoincrement())
+  tenant_id     String
+  tenant        Tenant            @relation(fields: [tenant_id], references: [id], onDelete: Cascade)
+  titulo        String
+  slug          String
+  subtitulo     String?
+  resumo        String?
+  conteudo      String
+  imagem_capa   String?
+  categoria_id  Int?
+  categoria     CategoriaNoticia? @relation(fields: [categoria_id], references: [id], onDelete: SetNull)
+  autor_id      Int?
+  autor_nome    String?
+  status        String            @default("rascunho") // "rascunho", "agendada", "publicada", "arquivada"
+  destaque      Boolean           @default(false)
+  publicado_em  DateTime?
+  criado_em     DateTime          @default(now())
+  atualizado_em DateTime          @updatedAt
+
+  @@unique([tenant_id, slug])
+  @@index([tenant_id, status])
+  @@index([tenant_id, destaque])
+  @@index([tenant_id, publicado_em])
+  @@map("noticias")
 }

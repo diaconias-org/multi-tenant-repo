@@ -6,6 +6,7 @@ import { useRouter }   from 'next/navigation';
 import Link            from 'next/link';
 import { CheckCircle2, XCircle, Clock } from 'lucide-react';
 import { Badge }        from '@/components/ui/badge';
+import AdminHeader     from '@/components/admin/AdminHeader';
 import styles          from './admin.module.css';
 
 export default function AdminClient({ comprovantes, usuarioNome, usuarioEmail }) {
@@ -44,27 +45,7 @@ export default function AdminClient({ comprovantes, usuarioNome, usuarioEmail })
 
   return (
     <div className={styles.page}>
-      {/* HEADER */}
-      <header className={styles.header}>
-        <div className={styles.headerInner}>
-          <div>
-            <h1 className={styles.headerTitle}>Painel Administrativo</h1>
-            <p className={styles.headerSub}>Diaconia Territorial São Raimundo Nonato</p>
-          </div>
-          <div className={styles.headerRight}>
-            <div className={styles.userInfo}>
-              <span className={styles.userName}>{usuarioNome}</span>
-              <span className={styles.userEmail}>{usuarioEmail}</span>
-            </div>
-            <Link href="/" className={styles.btnLogout} style={{ textDecoration: 'none', background: 'var(--cream)', color: 'var(--bordo)' }}>
-              ← Início
-            </Link>
-            <button className={styles.btnLogout} onClick={handleLogout} disabled={saindo}>
-              {saindo ? 'Saindo…' : '↩ Sair'}
-            </button>
-          </div>
-        </div>
-      </header>
+      <AdminHeader usuarioNome={usuarioNome} usuarioEmail={usuarioEmail} />
 
 
       <main className={styles.main}>

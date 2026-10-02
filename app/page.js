@@ -103,6 +103,7 @@ export default function HomePage() {
             </div>
           </div>
           <div className={styles.navLinks}>
+            <Link href="/noticias" className={styles.navLink} style={{ fontWeight: 600 }}>Notícias</Link>
             <a href="#pastorais" className={styles.navLink}>Pastorais</a>
             <a href="#agenda" className={styles.navLink}>Agenda</a>
             <a href="#equipe" className={styles.navLink}>Equipe</a>
