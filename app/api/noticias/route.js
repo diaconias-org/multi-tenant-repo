@@ -4,7 +4,13 @@
  */
 import { NextResponse } from 'next/server';
 import { auth } from '@/auth';
-import { AppError } from '@/lib/errors';
+import { tratarErroApi } from '@/lib/errors';
+import {
+  validarDTO,
+  CriarNoticiaDTO,
+  ListarNoticiasPublicasQueryDTO,
+  ListarNoticiasAdminQueryDTO,
+} from '@/dtos';
 import {
   listarNoticiasPublicas,
   listarTodasNoticiasAdmin,
@@ -24,34 +30,44 @@ export async function GET(request) {
         return NextResponse.json({ erro: 'Não autorizado.' }, { status: 401 });
       }
 
-      const resultado = await listarTodasNoticiasAdmin({
+      // Validação com DTO administrativo
+      const queryParams = validarDTO(ListarNoticiasAdminQueryDTO, {
         status: searchParams.get('status'),
         categoriaId: searchParams.get('categoriaId'),
         busca: searchParams.get('busca'),
-        destaque: searchParams.get('destaque') ? searchParams.get('destaque') === 'true' : null,
-        ordenarPor: searchParams.get('ordenarPor') || 'criado_em',
-        pagina: searchParams.get('pagina') || 1,
-        limite: searchParams.get('limite') || 15,
+        destaque: searchParams.get('destaque'),
+        ordenarPor: searchParams.get('ordenarPor'),
+        pagina: searchParams.get('pagina'),
+        limite: searchParams.get('limite'),
       });
 
+      const resultado = await listarTodasNoticiasAdmin(queryParams);
       return NextResponse.json(resultado);
     }
 
-    // Consulta pública: somente publicadas
-    const resultado = await listarNoticiasPublicas({
-      categoriaSlug: searchParams.get('categoria'),
+    // Consulta pública: validada por DTO
+    const queryParams = validarDTO(ListarNoticiasPublicasQueryDTO, {
+      categoria: searchParams.get('categoria'),
       busca: searchParams.get('busca'),
-      destaque: searchParams.get('destaque') ? searchParams.get('destaque') === 'true' : null,
-      ordenarPor: searchParams.get('ordenarPor') || 'recente',
-      pagina: searchParams.get('pagina') || 1,
-      limite: searchParams.get('limite') || 10,
+      destaque: searchParams.get('destaque'),
+      ordenarPor: searchParams.get('ordenarPor'),
+      pagina: searchParams.get('pagina'),
+      limite: searchParams.get('limite'),
+    });
+
+    const resultado = await listarNoticiasPublicas({
+      categoriaSlug: queryParams.categoria,
+      busca: queryParams.busca,
+      destaque: queryParams.destaque,
+      ordenarPor: queryParams.ordenarPor,
+      pagina: queryParams.pagina,
+      limite: queryParams.limite,
     });
 
     return NextResponse.json(resultado);
   } catch (error) {
     console.error('Erro na rota GET /api/noticias:', error);
-    const status = error instanceof AppError ? error.statusCode : 500;
-    return NextResponse.json({ erro: error.message || 'Erro ao buscar notícias.' }, { status });
+    return tratarErroApi(error, 'Erro ao buscar notícias.');
   }
 }
 
@@ -64,12 +80,12 @@ export async function POST(request) {
     }
 
     const contentType = request.headers.get('content-type') || '';
-    let dados = {};
+    let dadosBrutos = {};
     let imagemCapa = null;
 
     if (contentType.includes('multipart/form-data')) {
       const formData = await request.formData();
-      dados = {
+      dadosBrutos = {
         titulo: formData.get('titulo'),
         slug: formData.get('slug'),
         subtitulo: formData.get('subtitulo'),
@@ -79,7 +95,7 @@ export async function POST(request) {
         autorNome: formData.get('autorNome') || session.user.name,
         autorId: session.user.id,
         status: formData.get('status') || 'rascunho',
-        destaque: formData.get('destaque') === 'true',
+        destaque: formData.get('destaque'),
         publicadoEm: formData.get('publicadoEm'),
       };
       const foto = formData.get('imagemCapa');
@@ -88,7 +104,7 @@ export async function POST(request) {
       }
     } else {
       const body = await request.json();
-      dados = {
+      dadosBrutos = {
         ...body,
         autorNome: body.autorNome || session.user.name,
         autorId: session.user.id,
@@ -96,15 +112,19 @@ export async function POST(request) {
       if (body.imagemCapa) imagemCapa = body.imagemCapa;
     }
 
+    // 1. Validação de formato e tipos via DTO
+    const dadosValidados = validarDTO(CriarNoticiaDTO, dadosBrutos);
+
+    // 2. Executa a criação no Service com dados 100% validados
     const noticia = await criarNoticia({
-      ...dados,
+      ...dadosValidados,
       imagemCapa,
     });
 
     return NextResponse.json(noticia, { status: 201 });
   } catch (error) {
     console.error('Erro na rota POST /api/noticias:', error);
-    const status = error instanceof AppError ? error.statusCode : 500;
-    return NextResponse.json({ erro: error.message || 'Erro ao criar notícia.' }, { status });
+    return tratarErroApi(error, 'Erro ao criar notícia.');
   }
 }
+

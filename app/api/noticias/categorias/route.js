@@ -4,7 +4,8 @@
  */
 import { NextResponse } from 'next/server';
 import { auth } from '@/auth';
-import { AppError } from '@/lib/errors';
+import { tratarErroApi } from '@/lib/errors';
+import { validarDTO, CriarCategoriaDTO } from '@/dtos';
 import { listarCategorias, criarCategoria } from '@/services/categoria.service';
 
 export async function GET(request) {
@@ -16,8 +17,7 @@ export async function GET(request) {
     return NextResponse.json(categorias);
   } catch (error) {
     console.error('Erro ao listar categorias:', error);
-    const status = error instanceof AppError ? error.statusCode : 500;
-    return NextResponse.json({ erro: error.message || 'Erro ao listar categorias.' }, { status });
+    return tratarErroApi(error, 'Erro ao listar categorias.');
   }
 }
 
@@ -29,11 +29,12 @@ export async function POST(request) {
     }
 
     const body = await request.json();
-    const nova = await criarCategoria(body);
+    const dadosValidados = validarDTO(CriarCategoriaDTO, body);
+    const nova = await criarCategoria(dadosValidados);
     return NextResponse.json(nova, { status: 201 });
   } catch (error) {
     console.error('Erro ao criar categoria:', error);
-    const status = error instanceof AppError ? error.statusCode : 500;
-    return NextResponse.json({ erro: error.message || 'Erro ao criar categoria.' }, { status });
+    return tratarErroApi(error, 'Erro ao criar categoria.');
   }
 }
+

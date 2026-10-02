@@ -4,7 +4,8 @@
  */
 import { NextResponse } from 'next/server';
 import { auth } from '@/auth';
-import { AppError } from '@/lib/errors';
+import { tratarErroApi } from '@/lib/errors';
+import { validarDTO, AtualizarCategoriaDTO } from '@/dtos';
 import {
   atualizarCategoria,
   deletarCategoria,
@@ -20,12 +21,12 @@ export async function PUT(request, { params }) {
 
     const { id } = await params;
     const body = await request.json();
-    const atualizada = await atualizarCategoria(id, body);
+    const dadosValidados = validarDTO(AtualizarCategoriaDTO, body);
+    const atualizada = await atualizarCategoria(id, dadosValidados);
     return NextResponse.json(atualizada);
   } catch (error) {
     console.error('Erro ao atualizar categoria:', error);
-    const status = error instanceof AppError ? error.statusCode : 500;
-    return NextResponse.json({ erro: error.message || 'Erro ao atualizar categoria.' }, { status });
+    return tratarErroApi(error, 'Erro ao atualizar categoria.');
   }
 }
 
@@ -41,8 +42,7 @@ export async function PATCH(request, { params }) {
     return NextResponse.json(atualizada);
   } catch (error) {
     console.error('Erro ao alternar status da categoria:', error);
-    const status = error instanceof AppError ? error.statusCode : 500;
-    return NextResponse.json({ erro: error.message || 'Erro ao alterar status.' }, { status });
+    return tratarErroApi(error, 'Erro ao alterar status.');
   }
 }
 
@@ -58,7 +58,7 @@ export async function DELETE(request, { params }) {
     return NextResponse.json({ sucesso: true, mensagem: 'Categoria excluída com sucesso.' });
   } catch (error) {
     console.error('Erro ao excluir categoria:', error);
-    const status = error instanceof AppError ? error.statusCode : 500;
-    return NextResponse.json({ erro: error.message || 'Erro ao excluir categoria.' }, { status });
+    return tratarErroApi(error, 'Erro ao excluir categoria.');
   }
 }
+

@@ -7,7 +7,8 @@
 import { NextResponse } from 'next/server';
 import { auth } from '@/auth';
 import { atualizarStatusComprovante } from '@/services/comprovante.service';
-import { AppError } from '@/lib/errors';
+import { tratarErroApi } from '@/lib/errors';
+import { validarDTO, AtualizarStatusComprovanteDTO } from '@/dtos';
 
 export async function PATCH(request, { params }) {
   try {
@@ -19,17 +20,15 @@ export async function PATCH(request, { params }) {
     const resolvedParams = await params;
     const { id } = resolvedParams;
     const body = await request.json();
-    const { status } = body;
 
-    await atualizarStatusComprovante({ id, status });
+    const dadosValidados = validarDTO(AtualizarStatusComprovanteDTO, body);
+
+    await atualizarStatusComprovante({ id, status: dadosValidados.status });
 
     return NextResponse.json({ success: true });
   } catch (err) {
     console.error('Erro ao atualizar status:', err);
-    const statusCode = err instanceof AppError ? err.statusCode : 500;
-    return NextResponse.json(
-      { error: err.message || 'Erro interno' },
-      { status: statusCode }
-    );
+    return tratarErroApi(err, 'Erro interno ao atualizar status.');
   }
 }
+

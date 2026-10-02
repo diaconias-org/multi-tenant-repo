@@ -11,7 +11,8 @@ import { NextResponse } from 'next/server';
 import { criarComprovante, listarComprovantes } from '@/services/comprovante.service';
 import { resolverTenantDaRequisicao, validarTenantAtivo } from '@/services/tenant.service';
 import { withTenant } from '@/lib/prisma';
-import { AppError } from '@/lib/errors';
+import { tratarErroApi } from '@/lib/errors';
+import { validarDTO, CriarComprovanteDTO } from '@/dtos';
 
 // GET — lista os comprovantes da paróquia/tenant identificada
 export async function GET(request) {
@@ -26,8 +27,7 @@ export async function GET(request) {
     return NextResponse.json({ comprovantes, tenant: { id: tenant.id, nome: tenant.nome } });
   } catch (error) {
     console.error('Erro ao listar comprovantes:', error);
-    const status = error instanceof AppError ? error.statusCode : 500;
-    return NextResponse.json({ erro: error.message || 'Erro interno' }, { status });
+    return tratarErroApi(error, 'Erro interno ao listar comprovantes.');
   }
 }
 
@@ -35,15 +35,21 @@ export async function GET(request) {
 export async function POST(request) {
   try {
     const formData = await request.formData();
-    const nome      = formData.get('nome');
-    const telefone  = formData.get('telefone');
-    const foto      = formData.get('foto');
-    const formTenant = formData.get('tenant_id');
+    const dadosBrutos = {
+      nome: formData.get('nome'),
+      telefone: formData.get('telefone'),
+      observacao: formData.get('observacao'),
+      tenant_id: formData.get('tenant_id'),
+    };
+    const foto = formData.get('foto');
+
+    // Validação DTO dos campos de entrada
+    const dadosValidados = validarDTO(CriarComprovanteDTO, dadosBrutos);
 
     // 1. Identifica e valida o tenant (por form, header, subdomínio ou fallback)
     let tenant;
-    if (formTenant) {
-      tenant = await validarTenantAtivo(formTenant);
+    if (dadosValidados.tenant_id) {
+      tenant = await validarTenantAtivo(dadosValidados.tenant_id);
     } else {
       tenant = await resolverTenantDaRequisicao(request, { fallbackParaDefault: true });
     }
@@ -51,8 +57,9 @@ export async function POST(request) {
     // 2. Executa a criação no contexto assíncrono blindado do tenant
     const result = await withTenant(tenant.id, async () => {
       return criarComprovante({
-        nome,
-        telefone,
+        nome: dadosValidados.nome,
+        telefone: dadosValidados.telefone,
+        observacao: dadosValidados.observacao,
         foto,
         tenantId: tenant.id,
       });
@@ -61,10 +68,7 @@ export async function POST(request) {
     return NextResponse.json({ ...result, tenant_id: tenant.id }, { status: 201 });
   } catch (error) {
     console.error('Erro ao salvar comprovante:', error);
-    const status = error instanceof AppError ? error.statusCode : 500;
-    return NextResponse.json(
-      { erro: error.message || 'Erro interno ao salvar.' },
-      { status }
-    );
+    return tratarErroApi(error, 'Erro interno ao salvar comprovante.');
   }
 }
+

@@ -4,7 +4,8 @@
  */
 import { NextResponse } from 'next/server';
 import { auth } from '@/auth';
-import { AppError } from '@/lib/errors';
+import { tratarErroApi } from '@/lib/errors';
+import { validarDTO, AtualizarNoticiaDTO } from '@/dtos';
 import {
   obterNoticiaPorId,
   obterNoticiaPorSlug,
@@ -28,8 +29,7 @@ export async function GET(request, { params }) {
     const noticia = await obterNoticiaPorSlug(id, { apenasPublicada });
     return NextResponse.json(noticia);
   } catch (error) {
-    const status = error instanceof AppError ? error.statusCode : 500;
-    return NextResponse.json({ erro: error.message || 'Erro ao carregar notícia.' }, { status });
+    return tratarErroApi(error, 'Erro ao carregar notícia.');
   }
 }
 
@@ -42,23 +42,24 @@ export async function PUT(request, { params }) {
 
     const { id } = await params;
     const contentType = request.headers.get('content-type') || '';
-    let dados = {};
+    let dadosBrutos = {};
     let imagemCapa = undefined;
     let removerImagemCapa = false;
 
     if (contentType.includes('multipart/form-data')) {
       const formData = await request.formData();
-      dados = {
-        titulo: formData.get('titulo'),
-        slug: formData.get('slug'),
+      dadosBrutos = {
+        titulo: formData.get('titulo') || undefined,
+        slug: formData.get('slug') || undefined,
         subtitulo: formData.get('subtitulo'),
         resumo: formData.get('resumo'),
-        conteudo: formData.get('conteudo'),
+        conteudo: formData.get('conteudo') || undefined,
         categoriaId: formData.get('categoriaId'),
         autorNome: formData.get('autorNome'),
-        status: formData.get('status'),
-        destaque: formData.get('destaque') === 'true',
-        publicadoEm: formData.get('publicadoEm'),
+        status: formData.get('status') || undefined,
+        destaque: formData.get('destaque') !== null ? formData.get('destaque') : undefined,
+        publicadoEm: formData.get('publicadoEm') || undefined,
+        removerImagemCapa: formData.get('removerImagemCapa'),
       };
 
       if (formData.get('removerImagemCapa') === 'true') {
@@ -71,22 +72,24 @@ export async function PUT(request, { params }) {
       }
     } else {
       const body = await request.json();
-      dados = body;
+      dadosBrutos = body;
       imagemCapa = body.imagemCapa;
       removerImagemCapa = Boolean(body.removerImagemCapa);
     }
 
+    // Validação DTO dos dados recebidos
+    const dadosValidados = validarDTO(AtualizarNoticiaDTO, dadosBrutos);
+
     const noticiaAtualizada = await atualizarNoticia(id, {
-      ...dados,
+      ...dadosValidados,
       imagemCapa,
-      removerImagemCapa,
+      removerImagemCapa: dadosValidados.removerImagemCapa ?? removerImagemCapa,
     });
 
     return NextResponse.json(noticiaAtualizada);
   } catch (error) {
     console.error('Erro na rota PUT /api/noticias/[id]:', error);
-    const status = error instanceof AppError ? error.statusCode : 500;
-    return NextResponse.json({ erro: error.message || 'Erro ao atualizar notícia.' }, { status });
+    return tratarErroApi(error, 'Erro ao atualizar notícia.');
   }
 }
 
@@ -102,7 +105,7 @@ export async function DELETE(request, { params }) {
     return NextResponse.json({ sucesso: true, mensagem: 'Notícia excluída com sucesso.' });
   } catch (error) {
     console.error('Erro na rota DELETE /api/noticias/[id]:', error);
-    const status = error instanceof AppError ? error.statusCode : 500;
-    return NextResponse.json({ erro: error.message || 'Erro ao excluir notícia.' }, { status });
+    return tratarErroApi(error, 'Erro ao excluir notícia.');
   }
 }
+
