@@ -1,24 +1,29 @@
 /**
  * app/api/noticias/[id]/despublicar/route.js
- * Ação rápida para despublicar notícia (reverter para rascunho).
+ * Ação rápida para despublicar notícia (reverter para rascunho), vinculada ao tenant da sessão.
  */
 import { NextResponse } from 'next/server';
 import { auth } from '@/auth';
-import { AppError } from '@/lib/errors';
+import { withTenant } from '@/lib/prisma';
+import { tratarErroApi } from '@/lib/errors';
 import { despublicarNoticia } from '@/services/noticia.service';
 
 export async function PATCH(request, { params }) {
   try {
     const session = await auth();
-    if (!session?.user) {
+    if (!session?.user?.tenant_id) {
       return NextResponse.json({ erro: 'Não autorizado.' }, { status: 401 });
     }
 
     const { id } = await params;
-    const noticia = await despublicarNoticia(id);
+    const tenantId = session.user.tenant_id;
+
+    const noticia = await withTenant(tenantId, async () => {
+      return despublicarNoticia(id, { tenantId });
+    });
+
     return NextResponse.json(noticia);
   } catch (error) {
-    const status = error instanceof AppError ? error.statusCode : 500;
-    return NextResponse.json({ erro: error.message || 'Erro ao despublicar notícia.' }, { status });
+    return tratarErroApi(error, 'Erro ao despublicar notícia.');
   }
 }

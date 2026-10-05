@@ -1,16 +1,17 @@
 /**
  * app/api/noticias/upload/route.js
- * Upload seguro de imagens para uso no editor rico ou capa de notícias.
+ * Upload seguro de imagens para uso no editor rico ou capa de notícias,
+ * com particionamento pelo tenant da sessão.
  */
 import { NextResponse } from 'next/server';
 import { auth } from '@/auth';
-import { AppError } from '@/lib/errors';
+import { AppError, tratarErroApi } from '@/lib/errors';
 import { salvarArquivo } from '@/lib/storage';
 
 export async function POST(request) {
   try {
     const session = await auth();
-    if (!session?.user) {
+    if (!session?.user?.tenant_id) {
       return NextResponse.json({ erro: 'Não autorizado.' }, { status: 401 });
     }
 
@@ -21,11 +22,11 @@ export async function POST(request) {
       throw new AppError('Nenhum arquivo enviado para upload.', 400);
     }
 
-    const url = await salvarArquivo(arquivo, 'noticias');
+    const pastaTenant = `noticias/${session.user.tenant_id}`;
+    const url = await salvarArquivo(arquivo, pastaTenant);
     return NextResponse.json({ url });
   } catch (error) {
     console.error('Erro no upload de imagem:', error);
-    const status = error instanceof AppError ? error.statusCode : 500;
-    return NextResponse.json({ erro: error.message || 'Erro ao fazer upload da imagem.' }, { status });
+    return tratarErroApi(error, 'Erro ao fazer upload da imagem.');
   }
 }

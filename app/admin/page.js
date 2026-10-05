@@ -1,7 +1,8 @@
-import { auth }                             from '@/auth';
-import { redirect }                         from 'next/navigation';
-import { listarComprovantes }               from '@/services/comprovante.service';
-import AdminClient                          from '@/components/admin/AdminClient';
+import { auth } from '@/auth';
+import { redirect } from 'next/navigation';
+import { withTenant } from '@/lib/prisma';
+import { listarComprovantes } from '@/services/comprovante.service';
+import AdminClient from '@/components/admin/AdminClient';
 
 export const metadata = {
   title: 'Painel Admin – Diaconia',
@@ -12,7 +13,10 @@ export default async function AdminPage() {
   const session = await auth();
   if (!session?.user) redirect('/login');
 
-  const comprovantes = await listarComprovantes({ tenantId: session.user.tenant_id });
+  const tenantId = session.user.tenant_id;
+  const comprovantes = await withTenant(tenantId, async () => {
+    return listarComprovantes({ tenantId });
+  });
 
   return (
     <AdminClient

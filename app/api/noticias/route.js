@@ -1,9 +1,11 @@
 /**
  * app/api/noticias/route.js
- * Endpoints públicos e administrativos para listagem e criação de notícias.
+ * Endpoints públicos e administrativos para listagem e criação de notícias,
+ * com isolamento estrito amarrado à sessão do usuário nas rotas administrativas.
  */
 import { NextResponse } from 'next/server';
 import { auth } from '@/auth';
+import { withTenant } from '@/lib/prisma';
 import { tratarErroApi } from '@/lib/errors';
 import {
   validarDTO,
@@ -23,10 +25,10 @@ export async function GET(request) {
     const { searchParams } = new URL(request.url);
     const adminMode = searchParams.get('admin') === 'true';
 
-    // Se solicitar modo admin, exige sessão ativa
+    // Se solicitar modo admin, exige sessão ativa e amarra ao tenant_id do usuário logado
     if (adminMode) {
       const session = await auth();
-      if (!session?.user) {
+      if (!session?.user?.tenant_id) {
         return NextResponse.json({ erro: 'Não autorizado.' }, { status: 401 });
       }
 
@@ -41,7 +43,11 @@ export async function GET(request) {
         limite: searchParams.get('limite'),
       });
 
-      const resultado = await listarTodasNoticiasAdmin(queryParams);
+      const tenantId = session.user.tenant_id;
+      const resultado = await withTenant(tenantId, async () => {
+        return listarTodasNoticiasAdmin({ ...queryParams, tenantId });
+      });
+
       return NextResponse.json(resultado);
     }
 
@@ -75,10 +81,11 @@ export async function GET(request) {
 export async function POST(request) {
   try {
     const session = await auth();
-    if (!session?.user) {
+    if (!session?.user?.tenant_id) {
       return NextResponse.json({ erro: 'Acesso restrito a administradores.' }, { status: 401 });
     }
 
+    const tenantId = session.user.tenant_id;
     const contentType = request.headers.get('content-type') || '';
     let dadosBrutos = {};
     let imagemCapa = null;
@@ -115,10 +122,13 @@ export async function POST(request) {
     // 1. Validação de formato e tipos via DTO
     const dadosValidados = validarDTO(CriarNoticiaDTO, dadosBrutos);
 
-    // 2. Executa a criação no Service com dados 100% validados
-    const noticia = await criarNoticia({
-      ...dadosValidados,
-      imagemCapa,
+    // 2. Executa a criação no Service forçando o tenant_id da sessão do usuário
+    const noticia = await withTenant(tenantId, async () => {
+      return criarNoticia({
+        ...dadosValidados,
+        imagemCapa,
+        tenantId,
+      });
     });
 
     return NextResponse.json(noticia, { status: 201 });
@@ -127,4 +137,3 @@ export async function POST(request) {
     return tratarErroApi(error, 'Erro ao criar notícia.');
   }
 }
-

@@ -1,5 +1,6 @@
 import { auth } from '@/auth';
 import { redirect } from 'next/navigation';
+import { withTenant } from '@/lib/prisma';
 import { listarCategorias } from '@/services/categoria.service';
 import AdminHeader from '@/components/admin/AdminHeader';
 import NoticiaForm from '@/components/admin/noticias/NoticiaForm';
@@ -13,7 +14,10 @@ export default async function NovaNoticiaPage() {
   const session = await auth();
   if (!session?.user) redirect('/login');
 
-  const categorias = await listarCategorias();
+  const tenantId = session.user.tenant_id;
+  const categorias = await withTenant(tenantId, async () => {
+    return listarCategorias({ tenantId });
+  });
 
   return (
     <div className={styles.page}>

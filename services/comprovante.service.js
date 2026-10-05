@@ -66,6 +66,9 @@ export async function atualizarStatusComprovante({ id, status, tenantId = null }
     throw new AppError(`Status inválido. Valores aceitos: ${statusValidos.join(', ')}.`, 400);
   }
 
+  // Garante que o comprovante existe e pertence estritamente ao tenant ativo
+  await obterComprovante(id, { tenantId });
+
   await comprovanteRepo.atualizarStatus(id, status, { tenant_id: tenantId });
   return { success: true };
 }
@@ -74,6 +77,9 @@ export async function deletarComprovante(id, { tenantId = null } = {}) {
   if (!id) {
     throw new AppError('ID do comprovante não fornecido.', 400);
   }
+
+  // Garante que o comprovante existe e pertence estritamente ao tenant ativo
+  await obterComprovante(id, { tenantId });
 
   await comprovanteRepo.deletar(id, { tenant_id: tenantId });
   return { success: true };

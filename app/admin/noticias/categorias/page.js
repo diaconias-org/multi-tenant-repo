@@ -1,5 +1,6 @@
 import { auth } from '@/auth';
 import { redirect } from 'next/navigation';
+import { withTenant } from '@/lib/prisma';
 import { listarCategorias } from '@/services/categoria.service';
 import CategoriasAdminClient from '@/components/admin/noticias/CategoriasAdminClient';
 
@@ -11,7 +12,10 @@ export default async function AdminCategoriasPage() {
   const session = await auth();
   if (!session?.user) redirect('/login');
 
-  const categorias = await listarCategorias();
+  const tenantId = session.user.tenant_id;
+  const categorias = await withTenant(tenantId, async () => {
+    return listarCategorias({ tenantId });
+  });
 
   return (
     <CategoriasAdminClient

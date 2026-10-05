@@ -1,24 +1,29 @@
 /**
  * app/api/noticias/[id]/publicar/route.js
- * Ação rápida para publicar notícia.
+ * Ação rápida para publicar notícia, vinculada estritamente ao tenant da sessão.
  */
 import { NextResponse } from 'next/server';
 import { auth } from '@/auth';
-import { AppError } from '@/lib/errors';
+import { withTenant } from '@/lib/prisma';
+import { tratarErroApi } from '@/lib/errors';
 import { publicarNoticia } from '@/services/noticia.service';
 
 export async function PATCH(request, { params }) {
   try {
     const session = await auth();
-    if (!session?.user) {
+    if (!session?.user?.tenant_id) {
       return NextResponse.json({ erro: 'Não autorizado.' }, { status: 401 });
     }
 
     const { id } = await params;
-    const noticia = await publicarNoticia(id);
+    const tenantId = session.user.tenant_id;
+
+    const noticia = await withTenant(tenantId, async () => {
+      return publicarNoticia(id, { tenantId });
+    });
+
     return NextResponse.json(noticia);
   } catch (error) {
-    const status = error instanceof AppError ? error.statusCode : 500;
-    return NextResponse.json({ erro: error.message || 'Erro ao publicar notícia.' }, { status });
+    return tratarErroApi(error, 'Erro ao publicar notícia.');
   }
 }

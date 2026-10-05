@@ -1,9 +1,11 @@
 /**
  * app/api/noticias/[id]/route.js
- * Endpoints para obtenção, atualização e exclusão de notícia específica por ID ou Slug.
+ * Endpoints para obtenção, atualização e exclusão de notícia específica por ID ou Slug,
+ * com amarração mandatória ao tenant do usuário autenticado nas mutações.
  */
 import { NextResponse } from 'next/server';
 import { auth } from '@/auth';
+import { withTenant } from '@/lib/prisma';
 import { tratarErroApi } from '@/lib/errors';
 import { validarDTO, AtualizarNoticiaDTO } from '@/dtos';
 import {
@@ -36,11 +38,12 @@ export async function GET(request, { params }) {
 export async function PUT(request, { params }) {
   try {
     const session = await auth();
-    if (!session?.user) {
+    if (!session?.user?.tenant_id) {
       return NextResponse.json({ erro: 'Não autorizado.' }, { status: 401 });
     }
 
     const { id } = await params;
+    const tenantId = session.user.tenant_id;
     const contentType = request.headers.get('content-type') || '';
     let dadosBrutos = {};
     let imagemCapa = undefined;
@@ -80,10 +83,13 @@ export async function PUT(request, { params }) {
     // Validação DTO dos dados recebidos
     const dadosValidados = validarDTO(AtualizarNoticiaDTO, dadosBrutos);
 
-    const noticiaAtualizada = await atualizarNoticia(id, {
-      ...dadosValidados,
-      imagemCapa,
-      removerImagemCapa: dadosValidados.removerImagemCapa ?? removerImagemCapa,
+    const noticiaAtualizada = await withTenant(tenantId, async () => {
+      return atualizarNoticia(id, {
+        ...dadosValidados,
+        imagemCapa,
+        removerImagemCapa: dadosValidados.removerImagemCapa ?? removerImagemCapa,
+        tenantId,
+      });
     });
 
     return NextResponse.json(noticiaAtualizada);
@@ -96,16 +102,20 @@ export async function PUT(request, { params }) {
 export async function DELETE(request, { params }) {
   try {
     const session = await auth();
-    if (!session?.user) {
+    if (!session?.user?.tenant_id) {
       return NextResponse.json({ erro: 'Não autorizado.' }, { status: 401 });
     }
 
     const { id } = await params;
-    await deletarNoticia(id);
+    const tenantId = session.user.tenant_id;
+
+    await withTenant(tenantId, async () => {
+      await deletarNoticia(id, { tenantId });
+    });
+
     return NextResponse.json({ sucesso: true, mensagem: 'Notícia excluída com sucesso.' });
   } catch (error) {
     console.error('Erro na rota DELETE /api/noticias/[id]:', error);
     return tratarErroApi(error, 'Erro ao excluir notícia.');
   }
 }
-

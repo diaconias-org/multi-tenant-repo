@@ -15,12 +15,42 @@ export const authConfig = {
     /**
      * authorized() é chamado pelo middleware antes de cada rota protegida.
      * Retorna true para deixar passar, false para redirecionar ao signIn.
+     * Garante isolamento estrito: um usuário logado em um tenant JAMAIS pode
+     * acessar rotas administrativas de outro tenant.
      */
-    authorized({ auth, request: { nextUrl } }) {
-      const isLoggedIn    = !!auth?.user;
-      const isAdminRoute  = nextUrl.pathname.startsWith('/admin');
-      if (isAdminRoute) return isLoggedIn; // /admin/* exige login
-      return true;                          // resto é público
+    authorized({ auth, request }) {
+      const { nextUrl, headers } = request;
+      const isLoggedIn   = !!auth?.user;
+      const isAdminRoute = nextUrl.pathname.startsWith('/admin');
+
+      if (isAdminRoute) {
+        if (!isLoggedIn) return false;
+
+        const userTenantId = auth?.user?.tenant_id;
+        if (userTenantId) {
+          // 1. Verifica se há subdomínio na requisição e se diverge do tenant do usuário
+          const host = headers?.get ? headers.get('host') || '' : '';
+          const hostSemPorta = host.split(':')[0];
+          const partes = hostSemPorta.split('.');
+          if (partes.length >= 2 && partes[0] !== 'www' && partes[0] !== 'localhost' && !partes[0].match(/^\d+$/)) {
+            const subdominio = partes[0].toLowerCase();
+            if (subdominio !== userTenantId.toLowerCase()) {
+              // Tentativa de acessar admin de outro tenant via subdomínio: bloqueia!
+              return false;
+            }
+          }
+
+          // 2. Verifica se foi enviado query param de outro tenant
+          const queryTenant = nextUrl.searchParams.get('tenant');
+          if (queryTenant && queryTenant.toLowerCase() !== userTenantId.toLowerCase()) {
+            return false;
+          }
+        }
+
+        return true;
+      }
+
+      return true; // rotas públicas
     },
 
     jwt({ token, user }) {

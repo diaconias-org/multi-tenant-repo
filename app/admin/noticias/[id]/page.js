@@ -1,5 +1,6 @@
 import { auth } from '@/auth';
 import { redirect, notFound } from 'next/navigation';
+import { withTenant } from '@/lib/prisma';
 import { obterNoticiaPorId } from '@/services/noticia.service';
 import { listarCategorias } from '@/services/categoria.service';
 import AdminHeader from '@/components/admin/AdminHeader';
@@ -14,16 +15,21 @@ export default async function EditarNoticiaPage({ params }) {
   const session = await auth();
   if (!session?.user) redirect('/login');
 
+  const tenantId = session.user.tenant_id;
   const { id } = await params;
 
   let noticia = null;
   try {
-    noticia = await obterNoticiaPorId(id);
+    noticia = await withTenant(tenantId, async () => {
+      return obterNoticiaPorId(id, { tenantId });
+    });
   } catch {
     notFound();
   }
 
-  const categorias = await listarCategorias();
+  const categorias = await withTenant(tenantId, async () => {
+    return listarCategorias({ tenantId });
+  });
 
   return (
     <div className={styles.page}>

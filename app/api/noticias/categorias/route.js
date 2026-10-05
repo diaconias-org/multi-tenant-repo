@@ -1,9 +1,11 @@
 /**
  * app/api/noticias/categorias/route.js
- * Endpoints para listagem e criação de categorias de notícias.
+ * Endpoints para listagem e criação de categorias de notícias,
+ * com amarração mandatória ao tenant do usuário logado na criação.
  */
 import { NextResponse } from 'next/server';
 import { auth } from '@/auth';
+import { withTenant } from '@/lib/prisma';
 import { tratarErroApi } from '@/lib/errors';
 import { validarDTO, CriarCategoriaDTO } from '@/dtos';
 import { listarCategorias, criarCategoria } from '@/services/categoria.service';
@@ -24,17 +26,21 @@ export async function GET(request) {
 export async function POST(request) {
   try {
     const session = await auth();
-    if (!session?.user) {
+    if (!session?.user?.tenant_id) {
       return NextResponse.json({ erro: 'Não autorizado.' }, { status: 401 });
     }
 
+    const tenantId = session.user.tenant_id;
     const body = await request.json();
     const dadosValidados = validarDTO(CriarCategoriaDTO, body);
-    const nova = await criarCategoria(dadosValidados);
+
+    const nova = await withTenant(tenantId, async () => {
+      return criarCategoria({ ...dadosValidados, tenantId });
+    });
+
     return NextResponse.json(nova, { status: 201 });
   } catch (error) {
     console.error('Erro ao criar categoria:', error);
     return tratarErroApi(error, 'Erro ao criar categoria.');
   }
 }
-
