@@ -1,4 +1,4 @@
-// eslint-disable-next-line @next/next/no-img-element
+import { headers } from 'next/headers';
 import Link from 'next/link';
 import {
   Church, Users, Baby, BookOpen, Music2,
@@ -98,7 +98,24 @@ const heroBtnBase =
 const midiaCardClass =
   'flex min-w-0 items-center gap-[18px] rounded-[18px] border-[1.5px] border-border bg-secondary p-[22px] shadow-soft transition-all duration-250 hover:-translate-y-1 hover:border-accent hover:shadow-card';
 
-export default function HomePage() {
+export default async function HomePage() {
+  const headerList = await headers();
+  const tenantId = headerList.get('x-tenant-id');
+
+  // Se nenhum tenant foi resolvido (acesso à raiz sem subdomínio ou query), não carrega nada
+  if (!tenantId) {
+    return (
+      <main className="flex min-h-screen items-center justify-center bg-background p-6 text-foreground">
+        <div className="w-full max-w-md rounded-2xl border border-border bg-card p-8 text-center shadow-sm">
+          <h1 className="mb-2 font-heading text-xl font-bold text-foreground">Domínio Inválido</h1>
+          <p className="text-sm text-muted-foreground leading-relaxed">
+            Nenhuma paróquia identificada neste endereço. Acesse utilizando o subdomínio ou link oficial da sua paróquia.
+          </p>
+        </div>
+      </main>
+    );
+  }
+
   return (
     <div className="min-h-screen overflow-x-hidden bg-secondary">
 

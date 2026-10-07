@@ -144,7 +144,122 @@ async function main() {
       },
     });
   }
-  console.log(`[Seed] ${noticiasSeed.length} notícias iniciais publicadas.`);
+  console.log(`[Seed] ${noticiasSeed.length} notícias iniciais publicadas para Curralinhos.`);
+
+  // ──────────────────────────────────────────────
+  // 5. Garante o segundo tenant de testes: saojose
+  // ──────────────────────────────────────────────
+  const tenantSaoJose = await prisma.tenant.upsert({
+    where: { id: 'saojose' },
+    update: {},
+    create: {
+      id: 'saojose',
+      nome: 'Paróquia São José Operário',
+      slug: 'saojose',
+    },
+  });
+  console.log(`[Seed] Segundo tenant configurado: ${tenantSaoJose.nome} (${tenantSaoJose.id})`);
+
+  // Administrador para São José
+  const emailSaoJose = 'admin@saojose.org';
+  const existenteSaoJose = await prisma.usuario.findUnique({
+    where: { email: emailSaoJose },
+  });
+
+  if (!existenteSaoJose) {
+    const hash = await bcrypt.hash('admin123change', 12);
+    const usuarioSaoJose = await prisma.usuario.create({
+      data: {
+        nome: 'Administrador São José',
+        email: emailSaoJose,
+        senha_hash: hash,
+        tenant_id: tenantSaoJose.id,
+      },
+    });
+    console.log(`[Seed] Administrador São José criado: ${usuarioSaoJose.email}`);
+  } else {
+    console.log(`[Seed] Administrador São José já existente: ${existenteSaoJose.email}`);
+  }
+
+  // Categorias para São José
+  const categoriasSaoJoseSeed = [
+    { nome: 'Ação Social & Caridade', slug: 'acao-social-e-caridade', descricao: 'Projetos comunitários, doações e assistência social' },
+    { nome: 'Liturgia Paroquial', slug: 'liturgia-paroquial', descricao: 'Escalas de missa, horários e celebrações solenes' },
+    { nome: 'Juventude São José', slug: 'juventude-sao-jose', descricao: 'Encontros de jovens, retiros e grupos de oração' },
+  ];
+
+  const categoriasSaoJoseCriadas = [];
+  for (const cat of categoriasSaoJoseSeed) {
+    const c = await prisma.categoriaNoticia.upsert({
+      where: {
+        tenant_id_slug: {
+          tenant_id: tenantSaoJose.id,
+          slug: cat.slug,
+        },
+      },
+      update: {},
+      create: {
+        ...cat,
+        tenant_id: tenantSaoJose.id,
+      },
+    });
+    categoriasSaoJoseCriadas.push(c);
+  }
+  console.log(`[Seed] ${categoriasSaoJoseCriadas.length} categorias configuradas para São José.`);
+
+  // Notícias para São José
+  const noticiasSaoJoseSeed = [
+    {
+      titulo: 'Paróquia São José celebra festa do padroeiro e bênção dos trabalhadores',
+      slug: 'paroquia-sao-jose-celebra-festa-do-padroeiro',
+      subtitulo: 'Comunidade paroquial vivencia momentos de profunda fé, celebração eucarística e procissão solene.',
+      resumo: 'Centenas de fiéis e trabalhadores participaram da tradicional bênção das carteiras de trabalho e ferramentas de ofício.',
+      conteudo: `
+        <p>A <strong>Paróquia São José Operário</strong> concluiu com júbilo o novenário e a festa do seu excelso padroeiro. A celebração foi marcada por forte devoção popular e espírito comunitário.</p>
+        <h2>Fé e Trabalho Digno</h2>
+        <p>Durante a homilia solene, destacou-se o exemplo de São José como homem justo, silencioso e guardião da Sagrada Família, sendo modelo inspirador para todos os pais e trabalhadores de nossa cidade.</p>
+        <blockquote>"São José nos ensina que o trabalho diário, vivido com honestidade e amor, é um caminho verdadeiro de santificação."</blockquote>
+        <p>Agradecemos a todos os voluntários, equipes de acolhida e benfeitores que tornaram esta festividade memorável.</p>
+      `,
+      categoria_id: categoriasSaoJoseCriadas[1]?.id,
+      autor_nome: 'Pascom São José',
+      status: 'publicada',
+      destaque: true,
+      publicado_em: new Date(),
+    },
+    {
+      titulo: 'Campanha do Quilo arrecada cestas básicas para famílias assistidas',
+      slug: 'campanha-do-quilo-arrecada-cestas-basicas',
+      subtitulo: 'Pastoral Social agradece a solidariedade de toda a comunidade paroquial durante o mês vicentino.',
+      resumo: 'Foram arrecadadas mais de duas toneladas de alimentos não perecíveis que já começaram a ser distribuídas.',
+      conteudo: `
+        <p>A generosidade da comunidade de São José fez a diferença mais uma vez. A tradicional <em>Campanha do Quilo</em> alcançou marcas expressivas neste mês, garantindo assistência a mais de 80 famílias em situação de vulnerabilidade.</p>
+        <p>Os pontos de arrecadação continuam abertos na secretaria paroquial para doações contínuas de leite, arroz, feijão e óleo.</p>
+      `,
+      categoria_id: categoriasSaoJoseCriadas[0]?.id,
+      autor_nome: 'Pastoral Social São José',
+      status: 'publicada',
+      destaque: false,
+      publicado_em: new Date(Date.now() - 2 * 24 * 3600 * 1000),
+    },
+  ];
+
+  for (const not of noticiasSaoJoseSeed) {
+    await prisma.noticia.upsert({
+      where: {
+        tenant_id_slug: {
+          tenant_id: tenantSaoJose.id,
+          slug: not.slug,
+        },
+      },
+      update: {},
+      create: {
+        ...not,
+        tenant_id: tenantSaoJose.id,
+      },
+    });
+  }
+  console.log(`[Seed] ${noticiasSaoJoseSeed.length} notícias iniciais publicadas para São José.`);
 }
 
 main()

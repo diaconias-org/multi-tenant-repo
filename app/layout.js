@@ -17,15 +17,17 @@ export const metadata = {
 };
 
 export default async function RootLayout({ children }) {
-  let tenantId = 'curralinhos';
+  let tenantId = null;
   let tenant = null;
 
   try {
     const headerList = await headers();
-    tenantId = headerList.get('x-tenant-id') || 'curralinhos';
-    tenant = await obterTenant(tenantId);
+    tenantId = headerList.get('x-tenant-id');
+    if (tenantId) {
+      tenant = await obterTenant(tenantId);
+    }
   } catch {
-    // Fora do ciclo HTTP ou fallback padrão
+    // Fora do ciclo HTTP
   }
 
   const tenantStyles = gerarVariaveisCssTenant(tenant || tenantId);
