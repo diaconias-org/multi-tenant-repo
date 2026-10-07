@@ -13,9 +13,19 @@ import {
   AlertTriangle,
   Save,
 } from 'lucide-react';
+import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import { Dialog, DialogTitle } from '@/components/ui/dialog';
+import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/components/ui/table';
 import AdminHeader from '@/components/admin/AdminHeader';
-import styles from '@/components/admin/admin.module.css';
+import { AdminPage, AdminMain } from '@/components/admin/AdminLayout';
+
+const iconBtn = 'inline-flex cursor-pointer rounded p-1.5 transition-colors hover:bg-secondary';
+const fieldClass = 'h-auto rounded-md border-[1.5px] border-input px-3 py-2 text-sm';
 
 export default function CategoriasAdminClient({
   inicialCategorias = [],
@@ -124,289 +134,225 @@ export default function CategoriasAdminClient({
   }
 
   return (
-    <div className={styles.page}>
+    <AdminPage>
       <AdminHeader usuarioNome={usuarioNome} usuarioEmail={usuarioEmail} />
 
-      <main className={styles.main}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24, flexWrap: 'wrap', gap: 12 }}>
+      <AdminMain>
+        <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
           <div>
-            <h2 style={{ fontSize: 24, fontWeight: 700, color: 'var(--bordo)', margin: 0, fontFamily: 'var(--font-cormorant)' }}>
+            <h2 className="m-0 font-heading text-2xl font-bold text-primary">
               Categorias de Notícias
             </h2>
-            <p style={{ fontSize: 13, color: 'var(--text-light)', margin: '4px 0 0' }}>
+            <p className="mt-1 text-[13px] text-muted-foreground">
               Organize os artigos em editoriais (ex: Liturgia, Avisos, Pastorais, Eventos).
             </p>
           </div>
-          <button
-            type="button"
-            onClick={abrirModalCriacao}
-            style={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: 8,
-              padding: '10px 20px',
-              backgroundColor: 'var(--bordo)',
-              color: '#fff',
-              borderRadius: 'var(--radius-sm)',
-              fontSize: 14,
-              fontWeight: 600,
-              border: 'none',
-              cursor: 'pointer',
-              boxShadow: 'var(--shadow-sm)',
-            }}
-          >
+          <Button type="button" onClick={abrirModalCriacao} className="px-5 shadow-soft">
             <Plus size={16} /> Nova Categoria
-          </button>
+          </Button>
         </div>
 
         {/* Tabela de Categorias */}
-        <div className={styles.tableWrap}>
-          <table className={styles.table}>
-            <thead>
-              <tr>
-                <th>Nome</th>
-                <th>Slug</th>
-                <th>Descrição</th>
-                <th>Notícias</th>
-                <th>Status</th>
-                <th style={{ textAlign: 'right' }}>Ações</th>
-              </tr>
-            </thead>
-            <tbody>
-              {categorias.length === 0 ? (
-                <tr>
-                  <td colSpan={6} style={{ textAlign: 'center', padding: '40px 20px', color: 'var(--text-light)' }}>
-                    Nenhuma categoria cadastrada até o momento.
-                  </td>
-                </tr>
-              ) : (
-                categorias.map((cat) => (
-                  <tr key={cat.id}>
-                    <td>
-                      <strong style={{ color: 'var(--text)' }}>{cat.nome}</strong>
-                    </td>
-                    <td>
-                      <code style={{ background: '#f3f4f6', padding: '2px 6px', borderRadius: 4, fontSize: 12 }}>
-                        {cat.slug}
-                      </code>
-                    </td>
-                    <td style={{ fontSize: 13, color: 'var(--text-light)', maxWidth: 280 }}>
-                      {cat.descricao || '—'}
-                    </td>
-                    <td style={{ fontSize: 13, fontWeight: 600 }}>
-                      {cat._count?.noticias || 0}
-                    </td>
-                    <td>
+        <Table>
+          <TableHeader>
+            <TableRow className="border-0 hover:bg-transparent">
+              <TableHead>Nome</TableHead>
+              <TableHead>Slug</TableHead>
+              <TableHead>Descrição</TableHead>
+              <TableHead>Notícias</TableHead>
+              <TableHead>Status</TableHead>
+              <TableHead className="text-right">Ações</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {categorias.length === 0 ? (
+              <TableRow>
+                <TableCell colSpan={6} className="px-5 py-10 text-center text-muted-foreground">
+                  Nenhuma categoria cadastrada até o momento.
+                </TableCell>
+              </TableRow>
+            ) : (
+              categorias.map((cat) => (
+                <TableRow key={cat.id}>
+                  <TableCell>
+                    <strong className="text-foreground">{cat.nome}</strong>
+                  </TableCell>
+                  <TableCell>
+                    <code className="rounded bg-muted px-1.5 py-0.5 text-xs">
+                      {cat.slug}
+                    </code>
+                  </TableCell>
+                  <TableCell className="max-w-[280px] text-[13px] text-muted-foreground">
+                    {cat.descricao || '—'}
+                  </TableCell>
+                  <TableCell className="text-[13px] font-semibold">
+                    {cat._count?.noticias || 0}
+                  </TableCell>
+                  <TableCell>
+                    <button
+                      type="button"
+                      onClick={() => handleAlternarStatus(cat.id)}
+                      className="cursor-pointer p-0"
+                      title="Clique para alternar status"
+                    >
+                      {cat.ativo ? (
+                        <Badge variant="success">Ativo</Badge>
+                      ) : (
+                        <Badge variant="secondary">Inativo</Badge>
+                      )}
+                    </button>
+                  </TableCell>
+                  <TableCell className="text-right">
+                    <div className="inline-flex items-center gap-1.5">
                       <button
                         type="button"
-                        onClick={() => handleAlternarStatus(cat.id)}
-                        style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
-                        title="Clique para alternar status"
+                        onClick={() => abrirModalEdicao(cat)}
+                        title="Editar Categoria"
+                        className={cn(iconBtn, 'text-primary')}
                       >
-                        {cat.ativo ? (
-                          <Badge variant="success">Ativo</Badge>
-                        ) : (
-                          <Badge variant="secondary">Inativo</Badge>
-                        )}
+                        <Edit size={16} />
                       </button>
-                    </td>
-                    <td style={{ textAlign: 'right' }}>
-                      <div style={{ display: 'inline-flex', gap: 6, alignItems: 'center' }}>
-                        <button
-                          type="button"
-                          onClick={() => abrirModalEdicao(cat)}
-                          title="Editar Categoria"
-                          style={{ padding: 6, background: 'none', border: 'none', color: '#8b1a1a', cursor: 'pointer' }}
-                        >
-                          <Edit size={16} />
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => setConfirmDelete(cat)}
-                          title="Excluir Categoria"
-                          style={{ padding: 6, background: 'none', border: 'none', color: '#ef4444', cursor: 'pointer' }}
-                        >
-                          <Trash2 size={16} />
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))
-              )}
-            </tbody>
-          </table>
-        </div>
-      </main>
+                      <button
+                        type="button"
+                        onClick={() => setConfirmDelete(cat)}
+                        title="Excluir Categoria"
+                        className={cn(iconBtn, 'text-red-500')}
+                      >
+                        <Trash2 size={16} />
+                      </button>
+                    </div>
+                  </TableCell>
+                </TableRow>
+              ))
+            )}
+          </TableBody>
+        </Table>
+      </AdminMain>
 
       {/* Modal de Criação / Edição de Categoria */}
       {modalAberto && (
-        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9999, padding: 16 }}>
-          <form
-            onSubmit={handleSalvar}
-            style={{
-              background: '#fff',
-              borderRadius: 'var(--radius-md)',
-              maxWidth: 480,
-              width: '100%',
-              padding: 24,
-              boxShadow: 'var(--shadow-lg)',
-            }}
-          >
-            <h3 style={{ margin: '0 0 16px', fontSize: 18, fontWeight: 700, color: 'var(--text)' }}>
+        <Dialog overlayClassName="bg-black/50 p-4 backdrop-blur-none" className="max-w-[480px] rounded-md p-0">
+          <form onSubmit={handleSalvar} className="p-6">
+            <DialogTitle className="mb-4">
               {editandoId ? 'Editar Categoria' : 'Nova Categoria'}
-            </h3>
+            </DialogTitle>
 
             {erro && (
-              <div style={{ padding: '8px 12px', background: '#fee2e2', borderRadius: 6, color: '#b91c1c', fontSize: 13, marginBottom: 14 }}>
+              <div className="mb-3.5 rounded-md bg-red-100 px-3 py-2 text-[13px] text-red-700">
                 {erro}
               </div>
             )}
 
-            <div style={{ marginBottom: 14 }}>
-              <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: 'var(--text-light)', marginBottom: 4 }}>
+            <div className="mb-3.5">
+              <Label className="mb-1 block text-xs text-muted-foreground">
                 Nome da Categoria *
-              </label>
-              <input
+              </Label>
+              <Input
                 type="text"
                 value={nome}
                 onChange={(e) => setNome(e.target.value)}
                 placeholder="Ex: Pastorais"
-                style={{
-                  width: '100%',
-                  padding: '8px 12px',
-                  borderRadius: 6,
-                  border: '1.5px solid var(--gray-border)',
-                  fontSize: 14,
-                }}
+                className={fieldClass}
                 required
               />
             </div>
 
-            <div style={{ marginBottom: 14 }}>
-              <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: 'var(--text-light)', marginBottom: 4 }}>
+            <div className="mb-3.5">
+              <Label className="mb-1 block text-xs text-muted-foreground">
                 Slug (Opcional - gerado automaticamente)
-              </label>
-              <input
+              </Label>
+              <Input
                 type="text"
                 value={slug}
                 onChange={(e) => setSlug(e.target.value)}
                 placeholder="Ex: pastorais"
-                style={{
-                  width: '100%',
-                  padding: '8px 12px',
-                  borderRadius: 6,
-                  border: '1.5px solid var(--gray-border)',
-                  fontSize: 14,
-                }}
+                className={fieldClass}
               />
             </div>
 
-            <div style={{ marginBottom: 16 }}>
-              <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: 'var(--text-light)', marginBottom: 4 }}>
+            <div className="mb-4">
+              <Label className="mb-1 block text-xs text-muted-foreground">
                 Descrição (Opcional)
-              </label>
-              <textarea
+              </Label>
+              <Textarea
                 value={descricao}
                 onChange={(e) => setDescricao(e.target.value)}
                 placeholder="Breve descrição da categoria..."
                 rows={3}
-                style={{
-                  width: '100%',
-                  padding: '8px 12px',
-                  borderRadius: 6,
-                  border: '1.5px solid var(--gray-border)',
-                  fontSize: 13,
-                  resize: 'vertical',
-                }}
+                className="resize-y rounded-md border-[1.5px] border-input px-3 py-2 text-[13px]"
               />
             </div>
 
-            <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 24 }}>
+            <div className="mb-6 flex items-center gap-2.5">
               <input
                 type="checkbox"
                 id="cat-ativo"
                 checked={ativo}
                 onChange={(e) => setAtivo(e.target.checked)}
-                style={{ width: 16, height: 16, accentColor: 'var(--bordo)', cursor: 'pointer' }}
+                className="size-4 cursor-pointer accent-primary"
               />
-              <label htmlFor="cat-ativo" style={{ fontSize: 13, fontWeight: 600, color: 'var(--text)', cursor: 'pointer' }}>
+              <Label htmlFor="cat-ativo" className="cursor-pointer text-[13px] text-foreground">
                 Categoria Ativa
-              </label>
+              </Label>
             </div>
 
-            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 10 }}>
-              <button
+            <div className="flex justify-end gap-2.5">
+              <Button
                 type="button"
+                variant="outline"
                 onClick={() => setModalAberto(false)}
                 disabled={salvando}
-                style={{
-                  padding: '8px 16px',
-                  borderRadius: 6,
-                  border: '1px solid #d1d5db',
-                  background: '#fff',
-                  cursor: 'pointer',
-                  fontWeight: 600,
-                  fontSize: 13,
-                }}
+                className="h-auto rounded-md border-gray-300 px-4 py-2 text-[13px]"
               >
                 Cancelar
-              </button>
-              <button
-                type="submit"
-                disabled={salvando}
-                style={{
-                  padding: '8px 18px',
-                  borderRadius: 6,
-                  border: 'none',
-                  background: 'var(--bordo)',
-                  color: '#fff',
-                  cursor: 'pointer',
-                  fontWeight: 600,
-                  fontSize: 13,
-                }}
-              >
+              </Button>
+              <Button type="submit" disabled={salvando} className="h-auto rounded-md px-[18px] py-2 text-[13px]">
                 {salvando ? 'Salvando…' : 'Salvar Categoria'}
-              </button>
+              </Button>
             </div>
           </form>
-        </div>
+        </Dialog>
       )}
 
       {/* Modal de Exclusão de Categoria */}
       {confirmDelete && (
-        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9999, padding: 16 }}>
-          <div style={{ background: '#fff', borderRadius: 'var(--radius-md)', maxWidth: 420, width: '100%', padding: 24, boxShadow: 'var(--shadow-lg)' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 12 }}>
-              <div style={{ width: 38, height: 38, borderRadius: '50%', background: '#fee2e2', color: '#ef4444', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <AlertTriangle size={20} />
-              </div>
-              <h3 style={{ margin: 0, fontSize: 17, fontWeight: 700, color: 'var(--text)' }}>Excluir Categoria</h3>
+        <Dialog
+          onClose={() => setConfirmDelete(null)}
+          overlayClassName="bg-black/50 p-4 backdrop-blur-none"
+          className="max-w-[420px] rounded-md p-6"
+        >
+          <div className="mb-3 flex items-center gap-3">
+            <div className="flex size-[38px] items-center justify-center rounded-full bg-red-100 text-red-500">
+              <AlertTriangle size={20} />
             </div>
-            <p style={{ fontSize: 13, color: 'var(--text)', margin: '0 0 16px' }}>
-              Tem certeza que deseja excluir a categoria <strong>{confirmDelete.nome}</strong>?
-              As notícias vinculadas permanecerão salvas, porém sem categoria.
-            </p>
-            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 10 }}>
-              <button
-                type="button"
-                onClick={() => setConfirmDelete(null)}
-                disabled={salvando}
-                style={{ padding: '8px 14px', borderRadius: 6, border: '1px solid #d1d5db', background: '#fff', cursor: 'pointer', fontWeight: 600, fontSize: 13 }}
-              >
-                Cancelar
-              </button>
-              <button
-                type="button"
-                onClick={() => handleExcluir(confirmDelete.id)}
-                disabled={salvando}
-                style={{ padding: '8px 16px', borderRadius: 6, border: 'none', background: '#dc2626', color: '#fff', cursor: 'pointer', fontWeight: 600, fontSize: 13 }}
-              >
-                {salvando ? 'Excluindo…' : 'Excluir'}
-              </button>
-            </div>
+            <DialogTitle className="m-0 text-[17px]">Excluir Categoria</DialogTitle>
           </div>
-        </div>
+          <p className="mb-4 text-[13px] text-foreground">
+            Tem certeza que deseja excluir a categoria <strong>{confirmDelete.nome}</strong>?
+            As notícias vinculadas permanecerão salvas, porém sem categoria.
+          </p>
+          <div className="flex justify-end gap-2.5">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setConfirmDelete(null)}
+              disabled={salvando}
+              className="h-auto rounded-md border-gray-300 px-3.5 py-2 text-[13px]"
+            >
+              Cancelar
+            </Button>
+            <Button
+              type="button"
+              variant="destructive"
+              onClick={() => handleExcluir(confirmDelete.id)}
+              disabled={salvando}
+              className="h-auto rounded-md bg-red-600 px-4 py-2 text-[13px] hover:bg-red-700"
+            >
+              {salvando ? 'Excluindo…' : 'Excluir'}
+            </Button>
+          </div>
+        </Dialog>
       )}
-    </div>
+    </AdminPage>
   );
 }

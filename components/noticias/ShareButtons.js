@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { Share2, Link as LinkIcon, Check } from 'lucide-react';
-import styles from './noticias.module.css';
+import { cn } from '@/lib/utils';
 
 export default function ShareButtons({ titulo, url }) {
   const [copiado, setCopiado] = useState(false);
@@ -27,7 +27,6 @@ export default function ShareButtons({ titulo, url }) {
       setCopiado(true);
       setTimeout(() => setCopiado(false), 2500);
     } catch {
-      // Fallback
       const ta = document.createElement('textarea');
       ta.value = url;
       document.body.appendChild(ta);
@@ -39,16 +38,19 @@ export default function ShareButtons({ titulo, url }) {
     }
   }
 
+  const btnBase =
+    'inline-flex items-center gap-1.5 rounded-lg px-3.5 py-2 text-[13px] font-semibold text-white transition-all duration-150 hover:-translate-y-px hover:opacity-90';
+
   return (
-    <div className={styles.shareBar}>
-      <span style={{ fontSize: 13.5, fontWeight: 700, color: 'var(--text)', display: 'inline-flex', alignItems: 'center', gap: 6 }}>
-        <Share2 size={16} color="var(--bordo)" /> Compartilhar esta matéria:
+    <div className="mx-auto mb-12 flex max-w-[760px] flex-wrap items-center justify-between gap-4 rounded-xl border border-accent/25 bg-card p-5">
+      <span className="inline-flex items-center gap-1.5 text-[13.5px] font-bold text-foreground">
+        <Share2 size={16} className="text-primary" /> Compartilhar esta matéria:
       </span>
-      <div className={styles.shareButtons}>
+      <div className="flex flex-wrap gap-2.5">
         <button
           type="button"
           onClick={compartilharWhatsApp}
-          className={`${styles.shareBtn} ${styles.btnWhatsapp}`}
+          className={cn(btnBase, 'bg-[#25d366]')}
           title="Compartilhar no WhatsApp"
         >
           WhatsApp
@@ -56,7 +58,7 @@ export default function ShareButtons({ titulo, url }) {
         <button
           type="button"
           onClick={compartilharFacebook}
-          className={`${styles.shareBtn} ${styles.btnFacebook}`}
+          className={cn(btnBase, 'bg-[#1877f2]')}
           title="Compartilhar no Facebook"
         >
           Facebook
@@ -64,7 +66,7 @@ export default function ShareButtons({ titulo, url }) {
         <button
           type="button"
           onClick={compartilharTwitter}
-          className={`${styles.shareBtn} ${styles.btnTwitter}`}
+          className={cn(btnBase, 'bg-black')}
           title="Compartilhar no X (Twitter)"
         >
           X (Twitter)
@@ -72,7 +74,7 @@ export default function ShareButtons({ titulo, url }) {
         <button
           type="button"
           onClick={copiarLink}
-          className={`${styles.shareBtn} ${styles.btnCopy}`}
+          className={cn(btnBase, 'bg-gray-600')}
           title="Copiar link"
         >
           {copiado ? <Check size={14} /> : <LinkIcon size={14} />}

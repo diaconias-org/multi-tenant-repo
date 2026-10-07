@@ -2,7 +2,6 @@ import { listarNoticiasPublicas } from '@/services/noticia.service';
 import { listarCategorias } from '@/services/categoria.service';
 import PublicNav from '@/components/site/PublicNav';
 import NoticiasClient from '@/components/noticias/NoticiasClient';
-import styles from '@/components/noticias/noticias.module.css';
 
 export const metadata = {
   title: 'Notícias & Acontecimentos – Diaconia Territorial São Raimundo Nonato',
@@ -38,21 +37,25 @@ export default async function NoticiasPage({ searchParams }) {
   const destaque = noticias.find((n) => n.destaque) || null;
 
   return (
-    <div className={styles.page}>
+    <div className="flex min-h-screen flex-col bg-secondary text-foreground">
       <PublicNav />
 
       {/* Hero Header */}
-      <section className={styles.hero}>
-        <span className={styles.heroEyebrow}>Comunicação & Fé</span>
-        <h1 className={styles.heroTitle}>Notícias & Informativos</h1>
-        <p className={styles.heroDesc}>
+      <section className="relative bg-gradient-to-br from-primary to-primary-dark px-6 pb-16 pt-14 text-center text-white">
+        <span className="mb-2 inline-block text-[13px] font-bold uppercase tracking-wider text-accent-light">
+          Comunicação & Fé
+        </span>
+        <h1 className="mb-3 font-heading text-[clamp(2rem,5vw,3.2rem)] font-bold leading-tight">
+          Notícias & Informativos
+        </h1>
+        <p className="mx-auto max-w-[640px] text-base leading-relaxed opacity-90">
           Fique por dentro das atividades pastorais, festejos das comunidades rurais e
           orientações espirituais do nosso território.
         </p>
       </section>
 
       {/* Conteúdo Principal */}
-      <main className={styles.container}>
+      <main className="mx-auto w-full max-w-[1180px] px-6 pb-20">
         <NoticiasClient
           inicialNoticias={noticias}
           paginacao={paginacao}
@@ -62,8 +65,8 @@ export default async function NoticiasPage({ searchParams }) {
       </main>
 
       {/* Footer */}
-      <footer style={{ background: '#2c1810', color: '#fff', padding: '36px 24px', textAlign: 'center', marginTop: 'auto' }}>
-        <p style={{ margin: 0, fontSize: 13, opacity: 0.8 }}>
+      <footer className="mt-auto bg-footer px-6 py-9 text-center text-white/70">
+        <p className="m-0 text-[13px] opacity-80">
           © {new Date().getFullYear()} Diaconia Territorial São Raimundo Nonato — Curralinhos, PI
         </p>
       </footer>

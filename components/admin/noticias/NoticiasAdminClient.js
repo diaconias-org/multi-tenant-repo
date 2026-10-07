@@ -18,9 +18,17 @@ import {
   ChevronLeft,
   ChevronRight,
 } from 'lucide-react';
+import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
+import { Button, buttonVariants } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Select } from '@/components/ui/select';
+import { Dialog, DialogTitle } from '@/components/ui/dialog';
+import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/components/ui/table';
 import AdminHeader from '@/components/admin/AdminHeader';
-import styles from '@/components/admin/admin.module.css';
+import { AdminPage, AdminMain } from '@/components/admin/AdminLayout';
+
+const iconBtn = 'inline-flex cursor-pointer rounded p-1.5 transition-colors hover:bg-secondary';
 
 export default function NoticiasAdminClient({
   inicialNoticias = [],
@@ -113,395 +121,283 @@ export default function NoticiasAdminClient({
   }
 
   return (
-    <div className={styles.page}>
+    <AdminPage>
       <AdminHeader usuarioNome={usuarioNome} usuarioEmail={usuarioEmail} />
 
-      <main className={styles.main}>
+      <AdminMain>
         {/* Cabeçalho da Seção de Notícias */}
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24, flexWrap: 'wrap', gap: 12 }}>
+        <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
           <div>
-            <h2 style={{ fontSize: 24, fontWeight: 700, color: 'var(--bordo)', margin: 0, fontFamily: 'var(--font-cormorant)' }}>
+            <h2 className="m-0 font-heading text-2xl font-bold text-primary">
               Gerenciador de Notícias
             </h2>
-            <p style={{ fontSize: 13, color: 'var(--text-light)', margin: '4px 0 0' }}>
+            <p className="mt-1 text-[13px] text-muted-foreground">
               Publique comunicados, pastorais, memórias e acontecimentos da paróquia.
             </p>
           </div>
-          <Link
-            href="/admin/noticias/novo"
-            style={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: 8,
-              padding: '10px 20px',
-              backgroundColor: 'var(--bordo)',
-              color: '#fff',
-              borderRadius: 'var(--radius-sm)',
-              fontSize: 14,
-              fontWeight: 600,
-              textDecoration: 'none',
-              boxShadow: 'var(--shadow-sm)',
-            }}
-          >
+          <Link href="/admin/noticias/novo" className={cn(buttonVariants(), 'px-5 shadow-soft')}>
             <Plus size={16} /> Nova Notícia
           </Link>
         </div>
 
         {/* Barra de Filtros e Busca */}
-        <div style={{ background: '#fff', padding: '16px 20px', borderRadius: 'var(--radius-md)', border: '1px solid var(--cream-dark)', marginBottom: 20, display: 'flex', flexWrap: 'wrap', gap: 14, alignItems: 'center' }}>
+        <div className="mb-5 flex flex-wrap items-center gap-3.5 rounded-md border border-border bg-card px-5 py-4">
           {/* Busca */}
-          <div style={{ position: 'relative', flex: '1 1 240px', minWidth: 200 }}>
-            <Search size={16} style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', color: 'var(--text-light)' }} />
-            <input
+          <div className="relative min-w-[200px] flex-[1_1_240px]">
+            <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+            <Input
               type="text"
               placeholder="Buscar por título ou resumo..."
               value={busca}
               onChange={(e) => setBusca(e.target.value)}
-              className={styles.searchInput}
-              style={{ paddingLeft: 36, width: '100%', maxWidth: 'none' }}
+              className="h-auto w-full border-[1.5px] border-input py-[11px] pl-9 pr-4 text-sm focus-visible:border-primary focus-visible:ring-[3px] focus-visible:ring-primary/10"
             />
           </div>
 
           {/* Filtro Status */}
-          <select
-            value={filtroStatus}
-            onChange={(e) => setFiltroStatus(e.target.value)}
-            style={{
-              padding: '10px 14px',
-              fontSize: 13,
-              borderRadius: 'var(--radius-sm)',
-              border: '1.5px solid var(--gray-border)',
-              background: '#fff',
-              color: 'var(--text)',
-              cursor: 'pointer',
-            }}
-          >
+          <Select value={filtroStatus} onChange={(e) => setFiltroStatus(e.target.value)}>
             <option value="">Todos os status</option>
             <option value="publicada">Publicada</option>
             <option value="rascunho">Rascunho</option>
             <option value="agendada">Agendada</option>
             <option value="arquivada">Arquivada</option>
-          </select>
+          </Select>
 
           {/* Filtro Categoria */}
-          <select
-            value={filtroCategoria}
-            onChange={(e) => setFiltroCategoria(e.target.value)}
-            style={{
-              padding: '10px 14px',
-              fontSize: 13,
-              borderRadius: 'var(--radius-sm)',
-              border: '1.5px solid var(--gray-border)',
-              background: '#fff',
-              color: 'var(--text)',
-              cursor: 'pointer',
-            }}
-          >
+          <Select value={filtroCategoria} onChange={(e) => setFiltroCategoria(e.target.value)}>
             <option value="">Todas as categorias</option>
             {categorias.map((cat) => (
               <option key={cat.id} value={cat.id}>
                 {cat.nome}
               </option>
             ))}
-          </select>
+          </Select>
 
           {(busca || filtroStatus || filtroCategoria) && (
-            <button
+            <Button
+              variant="link"
               onClick={() => {
                 setBusca('');
                 setFiltroStatus('');
                 setFiltroCategoria('');
               }}
-              style={{
-                background: 'none',
-                border: 'none',
-                color: 'var(--bordo)',
-                fontSize: 13,
-                fontWeight: 600,
-                cursor: 'pointer',
-                padding: '6px 10px',
-              }}
+              className="h-auto px-2.5 py-1.5 text-[13px] no-underline hover:no-underline"
             >
               Limpar filtros
-            </button>
+            </Button>
           )}
         </div>
 
         {/* Tabela de Notícias */}
-        <div className={styles.tableWrap}>
-          <table className={styles.table}>
-            <thead>
-              <tr>
-                <th style={{ width: 60 }}>Capa</th>
-                <th>Título</th>
-                <th>Categoria</th>
-                <th>Autor</th>
-                <th>Status</th>
-                <th>Criação</th>
-                <th>Publicação</th>
-                <th style={{ textAlign: 'right' }}>Ações</th>
-              </tr>
-            </thead>
-            <tbody>
-              {noticiasFiltradas.length === 0 ? (
-                <tr>
-                  <td colSpan={8} style={{ textAlign: 'center', padding: '40px 20px', color: 'var(--text-light)' }}>
-                    Nenhuma notícia encontrada com os filtros aplicados.
-                  </td>
-                </tr>
-              ) : (
-                noticiasFiltradas.map((item) => (
-                  <tr key={item.id}>
-                    <td>
-                      {item.imagem_capa ? (
-                        <div style={{ width: 44, height: 44, borderRadius: 6, overflow: 'hidden', background: '#f3f4f6' }}>
-                          {/* eslint-disable-next-line @next/next/no-img-element */}
-                          <img
-                            src={item.imagem_capa}
-                            alt=""
-                            style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                          />
-                        </div>
-                      ) : (
-                        <div
-                          style={{
-                            width: 44,
-                            height: 44,
-                            borderRadius: 6,
-                            background: '#f5ede0',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            color: '#8b1a1a',
-                            fontSize: 10,
-                            fontWeight: 700,
-                          }}
-                        >
-                          SEM FOTO
-                        </div>
-                      )}
-                    </td>
-                    <td>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                        {item.destaque && (
-                          <span title="Notícia em Destaque" style={{ color: '#b89a5a' }}>
-                            <Star size={14} fill="#b89a5a" />
-                          </span>
-                        )}
-                        <strong style={{ color: 'var(--text)' }}>{item.titulo}</strong>
+        <Table>
+          <TableHeader>
+            <TableRow className="border-0 hover:bg-transparent">
+              <TableHead className="w-[60px]">Capa</TableHead>
+              <TableHead>Título</TableHead>
+              <TableHead>Categoria</TableHead>
+              <TableHead>Autor</TableHead>
+              <TableHead>Status</TableHead>
+              <TableHead>Criação</TableHead>
+              <TableHead>Publicação</TableHead>
+              <TableHead className="text-right">Ações</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {noticiasFiltradas.length === 0 ? (
+              <TableRow>
+                <TableCell colSpan={8} className="px-5 py-10 text-center text-muted-foreground">
+                  Nenhuma notícia encontrada com os filtros aplicados.
+                </TableCell>
+              </TableRow>
+            ) : (
+              noticiasFiltradas.map((item) => (
+                <TableRow key={item.id}>
+                  <TableCell>
+                    {item.imagem_capa ? (
+                      <div className="size-11 overflow-hidden rounded-md bg-muted">
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img src={item.imagem_capa} alt="" className="size-full object-cover" />
                       </div>
-                      <small style={{ color: 'var(--text-light)', display: 'block', marginTop: 2 }}>
-                        /noticias/{item.slug}
-                      </small>
-                    </td>
-                    <td>
-                      {item.categoria?.nome ? (
-                        <span style={{ fontSize: 12, padding: '3px 8px', borderRadius: 4, background: '#f3f4f6', color: '#4b5563' }}>
-                          {item.categoria.nome}
+                    ) : (
+                      <div className="flex size-11 items-center justify-center rounded-md bg-secondary text-[10px] font-bold text-primary">
+                        SEM FOTO
+                      </div>
+                    )}
+                  </TableCell>
+                  <TableCell>
+                    <div className="flex items-center gap-1.5">
+                      {item.destaque && (
+                        <span title="Notícia em Destaque" className="text-accent">
+                          <Star size={14} fill="currentColor" />
                         </span>
-                      ) : (
-                        <span style={{ color: 'var(--text-light)', fontSize: 12 }}>—</span>
                       )}
-                    </td>
-                    <td style={{ fontSize: 13 }}>{item.autor_nome || '—'}</td>
-                    <td>{renderStatusBadge(item.status)}</td>
-                    <td style={{ fontSize: 12, color: 'var(--text-light)' }}>
-                      {item.criado_em ? new Date(item.criado_em).toLocaleDateString('pt-BR') : '—'}
-                    </td>
-                    <td style={{ fontSize: 12, color: 'var(--text-light)' }}>
-                      {item.publicado_em ? new Date(item.publicado_em).toLocaleDateString('pt-BR') : '—'}
-                    </td>
-                    <td style={{ textAlign: 'right' }}>
-                      <div style={{ display: 'inline-flex', gap: 4, alignItems: 'center' }}>
-                        {/* Ver pública */}
-                        {item.status === 'publicada' && (
-                          <Link
-                            href={`/noticias/${item.slug}`}
-                            target="_blank"
-                            title="Ver notícia pública"
-                            style={{
-                              padding: 6,
-                              borderRadius: 4,
-                              color: '#6b7280',
-                              display: 'inline-flex',
-                            }}
-                          >
-                            <ExternalLink size={15} />
-                          </Link>
-                        )}
-
-                        {/* Publicar / Despublicar */}
-                        {item.status === 'publicada' ? (
-                          <button
-                            type="button"
-                            onClick={() =>
-                              setConfirmModal({
-                                tipo: 'despublicar',
-                                id: item.id,
-                                titulo: item.titulo,
-                                mensagem: 'Deseja despublicar esta notícia? Ela voltará para rascunho e sairá do site público.',
-                              })
-                            }
-                            title="Despublicar (Reverter para Rascunho)"
-                            style={{ padding: 6, background: 'none', border: 'none', color: '#f59e0b', cursor: 'pointer' }}
-                          >
-                            <EyeOff size={15} />
-                          </button>
-                        ) : (
-                          <button
-                            type="button"
-                            onClick={() =>
-                              setConfirmModal({
-                                tipo: 'publicar',
-                                id: item.id,
-                                titulo: item.titulo,
-                                mensagem: 'Deseja publicar esta notícia no site agora?',
-                              })
-                            }
-                            title="Publicar imediatamente"
-                            style={{ padding: 6, background: 'none', border: 'none', color: '#10b981', cursor: 'pointer' }}
-                          >
-                            <Globe size={15} />
-                          </button>
-                        )}
-
-                        {/* Duplicar */}
-                        <button
-                          type="button"
-                          onClick={() => handleAcao('duplicar', item.id)}
-                          title="Duplicar como rascunho"
-                          style={{ padding: 6, background: 'none', border: 'none', color: '#3b82f6', cursor: 'pointer' }}
-                        >
-                          <Copy size={15} />
-                        </button>
-
-                        {/* Editar */}
+                      <strong className="text-foreground">{item.titulo}</strong>
+                    </div>
+                    <small className="mt-0.5 block text-muted-foreground">
+                      /noticias/{item.slug}
+                    </small>
+                  </TableCell>
+                  <TableCell>
+                    {item.categoria?.nome ? (
+                      <span className="rounded bg-muted px-2 py-[3px] text-xs text-soft">
+                        {item.categoria.nome}
+                      </span>
+                    ) : (
+                      <span className="text-xs text-muted-foreground">—</span>
+                    )}
+                  </TableCell>
+                  <TableCell className="text-[13px]">{item.autor_nome || '—'}</TableCell>
+                  <TableCell>{renderStatusBadge(item.status)}</TableCell>
+                  <TableCell className="text-xs text-muted-foreground">
+                    {item.criado_em ? new Date(item.criado_em).toLocaleDateString('pt-BR') : '—'}
+                  </TableCell>
+                  <TableCell className="text-xs text-muted-foreground">
+                    {item.publicado_em ? new Date(item.publicado_em).toLocaleDateString('pt-BR') : '—'}
+                  </TableCell>
+                  <TableCell className="text-right">
+                    <div className="inline-flex items-center gap-1">
+                      {/* Ver pública */}
+                      {item.status === 'publicada' && (
                         <Link
-                          href={`/admin/noticias/${item.id}`}
-                          title="Editar notícia"
-                          style={{
-                            padding: 6,
-                            borderRadius: 4,
-                            color: '#8b1a1a',
-                            display: 'inline-flex',
-                          }}
+                          href={`/noticias/${item.slug}`}
+                          target="_blank"
+                          title="Ver notícia pública"
+                          className={cn(iconBtn, 'text-muted-foreground')}
                         >
-                          <Edit size={15} />
+                          <ExternalLink size={15} />
                         </Link>
+                      )}
 
-                        {/* Excluir */}
+                      {/* Publicar / Despublicar */}
+                      {item.status === 'publicada' ? (
                         <button
                           type="button"
                           onClick={() =>
                             setConfirmModal({
-                              tipo: 'excluir',
+                              tipo: 'despublicar',
                               id: item.id,
                               titulo: item.titulo,
-                              mensagem: 'Tem certeza que deseja excluir esta notícia? Esta ação é irreversível.',
+                              mensagem: 'Deseja despublicar esta notícia? Ela voltará para rascunho e sairá do site público.',
                             })
                           }
-                          title="Excluir notícia"
-                          style={{ padding: 6, background: 'none', border: 'none', color: '#ef4444', cursor: 'pointer' }}
+                          title="Despublicar (Reverter para Rascunho)"
+                          className={cn(iconBtn, 'text-amber-500')}
                         >
-                          <Trash2 size={15} />
+                          <EyeOff size={15} />
                         </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))
-              )}
-            </tbody>
-          </table>
-        </div>
-      </main>
+                      ) : (
+                        <button
+                          type="button"
+                          onClick={() =>
+                            setConfirmModal({
+                              tipo: 'publicar',
+                              id: item.id,
+                              titulo: item.titulo,
+                              mensagem: 'Deseja publicar esta notícia no site agora?',
+                            })
+                          }
+                          title="Publicar imediatamente"
+                          className={cn(iconBtn, 'text-emerald-500')}
+                        >
+                          <Globe size={15} />
+                        </button>
+                      )}
+
+                      {/* Duplicar */}
+                      <button
+                        type="button"
+                        onClick={() => handleAcao('duplicar', item.id)}
+                        title="Duplicar como rascunho"
+                        className={cn(iconBtn, 'text-blue-500')}
+                      >
+                        <Copy size={15} />
+                      </button>
+
+                      {/* Editar */}
+                      <Link
+                        href={`/admin/noticias/${item.id}`}
+                        title="Editar notícia"
+                        className={cn(iconBtn, 'text-primary')}
+                      >
+                        <Edit size={15} />
+                      </Link>
+
+                      {/* Excluir */}
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setConfirmModal({
+                            tipo: 'excluir',
+                            id: item.id,
+                            titulo: item.titulo,
+                            mensagem: 'Tem certeza que deseja excluir esta notícia? Esta ação é irreversível.',
+                          })
+                        }
+                        title="Excluir notícia"
+                        className={cn(iconBtn, 'text-red-500')}
+                      >
+                        <Trash2 size={15} />
+                      </button>
+                    </div>
+                  </TableCell>
+                </TableRow>
+              ))
+            )}
+          </TableBody>
+        </Table>
+      </AdminMain>
 
       {/* Modal de Confirmação de Ações Destrutivas ou Relevantes */}
       {confirmModal && (
-        <div
-          style={{
-            position: 'fixed',
-            inset: 0,
-            background: 'rgba(0,0,0,0.5)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            zIndex: 9999,
-            padding: 16,
-          }}
+        <Dialog
+          onClose={() => setConfirmModal(null)}
+          overlayClassName="bg-black/50 p-4 backdrop-blur-none"
+          className="max-w-[440px] rounded-md p-6"
         >
-          <div
-            style={{
-              background: '#fff',
-              borderRadius: 'var(--radius-md)',
-              maxWidth: 440,
-              width: '100%',
-              padding: 24,
-              boxShadow: 'var(--shadow-lg)',
-            }}
-          >
-            <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 12 }}>
-              <div
-                style={{
-                  width: 40,
-                  height: 40,
-                  borderRadius: '50%',
-                  background: confirmModal.tipo === 'excluir' ? '#fee2e2' : '#fef3c7',
-                  color: confirmModal.tipo === 'excluir' ? '#ef4444' : '#f59e0b',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                }}
-              >
-                <AlertTriangle size={20} />
-              </div>
-              <h3 style={{ margin: 0, fontSize: 18, fontWeight: 700, color: 'var(--text)' }}>
-                {confirmModal.tipo === 'excluir' ? 'Excluir Notícia' : 'Confirmar Ação'}
-              </h3>
+          <div className="mb-3 flex items-center gap-3">
+            <div
+              className={cn(
+                'flex size-10 items-center justify-center rounded-full',
+                confirmModal.tipo === 'excluir' ? 'bg-red-100 text-red-500' : 'bg-amber-100 text-amber-500'
+              )}
+            >
+              <AlertTriangle size={20} />
             </div>
-            <p style={{ fontSize: 14, color: 'var(--text-light)', margin: '0 0 8px' }}>
-              <strong>{confirmModal.titulo}</strong>
-            </p>
-            <p style={{ fontSize: 13, color: 'var(--text)', margin: '0 0 20px' }}>
-              {confirmModal.mensagem}
-            </p>
-            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 10 }}>
-              <button
-                type="button"
-                onClick={() => setConfirmModal(null)}
-                disabled={processando}
-                style={{
-                  padding: '8px 16px',
-                  borderRadius: 6,
-                  border: '1px solid #d1d5db',
-                  background: '#fff',
-                  cursor: 'pointer',
-                  fontWeight: 600,
-                  fontSize: 13,
-                }}
-              >
-                Cancelar
-              </button>
-              <button
-                type="button"
-                onClick={() => handleAcao(confirmModal.tipo, confirmModal.id)}
-                disabled={processando}
-                style={{
-                  padding: '8px 18px',
-                  borderRadius: 6,
-                  border: 'none',
-                  background: confirmModal.tipo === 'excluir' ? '#dc2626' : '#8b1a1a',
-                  color: '#fff',
-                  cursor: 'pointer',
-                  fontWeight: 600,
-                  fontSize: 13,
-                }}
-              >
-                {processando ? 'Processando…' : 'Confirmar'}
-              </button>
-            </div>
+            <DialogTitle className="m-0">
+              {confirmModal.tipo === 'excluir' ? 'Excluir Notícia' : 'Confirmar Ação'}
+            </DialogTitle>
           </div>
-        </div>
+          <p className="mb-2 text-sm text-muted-foreground">
+            <strong>{confirmModal.titulo}</strong>
+          </p>
+          <p className="mb-5 text-[13px] text-foreground">
+            {confirmModal.mensagem}
+          </p>
+          <div className="flex justify-end gap-2.5">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setConfirmModal(null)}
+              disabled={processando}
+              className="h-auto rounded-md border-gray-300 px-4 py-2 text-[13px]"
+            >
+              Cancelar
+            </Button>
+            <Button
+              type="button"
+              onClick={() => handleAcao(confirmModal.tipo, confirmModal.id)}
+              disabled={processando}
+              variant={confirmModal.tipo === 'excluir' ? 'destructive' : 'default'}
+              className={cn(
+                'h-auto rounded-md px-[18px] py-2 text-[13px]',
+                confirmModal.tipo === 'excluir' && 'bg-red-600 hover:bg-red-700'
+              )}
+            >
+              {processando ? 'Processando…' : 'Confirmar'}
+            </Button>
+          </div>
+        </Dialog>
       )}
-    </div>
+    </AdminPage>
   );
 }

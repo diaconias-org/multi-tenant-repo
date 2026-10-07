@@ -16,6 +16,13 @@ import {
   Star,
   FileText,
 } from 'lucide-react';
+import { cn } from '@/lib/utils';
+import { Button, buttonVariants } from '@/components/ui/button';
+import { Card } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Select } from '@/components/ui/select';
+import { Textarea } from '@/components/ui/textarea';
 import RichTextEditor from './RichTextEditor';
 
 function gerarSlugLocal(texto) {
@@ -31,6 +38,11 @@ function gerarSlugLocal(texto) {
     .replace(/-+/g, '-')
     .replace(/^-+|-+$/g, '');
 }
+
+const cardClass = 'rounded-md p-5 shadow-none';
+const cardTitleClass = 'mb-4 flex items-center gap-2 text-sm font-bold text-foreground';
+const smallLabel = 'mb-1 block text-xs text-muted-foreground';
+const fieldClass = 'h-auto rounded-md border-[1.5px] border-input px-3 py-2 text-[13px]';
 
 export default function NoticiaForm({ noticia = null, categorias = [], autorPadrao = '' }) {
   const router = useRouter();
@@ -157,282 +169,186 @@ export default function NoticiaForm({ noticia = null, categorias = [], autorPadr
   }
 
   return (
-    <form onSubmit={handleSubmit} style={{ maxWidth: 1100, margin: '0 auto', padding: '24px 28px 60px' }}>
+    <form onSubmit={handleSubmit} className="mx-auto max-w-[1100px] px-7 pb-[60px] pt-6 max-[600px]:px-4">
       {/* Barra Superior de Ações */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24, flexWrap: 'wrap', gap: 12 }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+      <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
+        <div className="flex items-center gap-3">
           <Link
             href="/admin/noticias"
-            style={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: 6,
-              padding: '8px 14px',
-              borderRadius: 6,
-              background: '#fff',
-              border: '1px solid #d1d5db',
-              color: 'var(--text)',
-              fontSize: 13,
-              fontWeight: 600,
-              textDecoration: 'none',
-            }}
+            className={cn(buttonVariants({ variant: 'outline' }), 'h-auto rounded-md border-gray-300 px-3.5 py-2 text-[13px] text-foreground shadow-none hover:text-foreground')}
           >
             <ArrowLeft size={16} /> Voltar às Notícias
           </Link>
-          <h2 style={{ fontSize: 22, fontWeight: 700, color: 'var(--bordo)', margin: 0, fontFamily: 'var(--font-cormorant)' }}>
+          <h2 className="m-0 font-heading text-[22px] font-bold text-primary">
             {isEdicao ? 'Editar Notícia' : 'Nova Notícia'}
           </h2>
         </div>
 
-        <div style={{ display: 'flex', gap: 10 }}>
-          <button
-            type="submit"
-            disabled={salvando}
-            style={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: 8,
-              padding: '10px 22px',
-              background: 'var(--bordo)',
-              color: '#fff',
-              borderRadius: 6,
-              border: 'none',
-              fontSize: 14,
-              fontWeight: 600,
-              cursor: 'pointer',
-              boxShadow: 'var(--shadow-sm)',
-            }}
-          >
+        <div className="flex gap-2.5">
+          <Button type="submit" disabled={salvando} className="h-auto rounded-md px-[22px] py-2.5 text-sm shadow-soft">
             <Save size={16} /> {salvando ? 'Salvando…' : 'Salvar Notícia'}
-          </button>
+          </Button>
         </div>
       </div>
 
       {/* Mensagens de Feedback */}
       {erro && (
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '12px 16px', background: '#fee2e2', border: '1px solid #f87171', borderRadius: 8, color: '#b91c1c', marginBottom: 20 }}>
+        <div className="mb-5 flex items-center gap-2.5 rounded-lg border border-red-400 bg-red-100 px-4 py-3 text-red-700">
           <AlertCircle size={20} />
           <span>{erro}</span>
         </div>
       )}
 
       {sucesso && (
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '12px 16px', background: '#d1fae5', border: '1px solid #34d399', borderRadius: 8, color: '#065f46', marginBottom: 20 }}>
+        <div className="mb-5 flex items-center gap-2.5 rounded-lg border border-emerald-400 bg-emerald-100 px-4 py-3 text-emerald-800">
           <CheckCircle2 size={20} />
           <span>Notícia salva com sucesso! Redirecionando…</span>
         </div>
       )}
 
       {/* Layout em Grid de 2 Colunas */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 340px', gap: 24, alignItems: 'start' }}>
+      <div className="grid grid-cols-[1fr_340px] items-start gap-6 max-[900px]:grid-cols-1">
         {/* Coluna Principal (Conteúdo) */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+        <div className="flex flex-col gap-5">
           {/* Título & Slug */}
-          <div style={{ background: '#fff', padding: 24, borderRadius: 'var(--radius-md)', border: '1px solid var(--cream-dark)' }}>
-            <label style={{ display: 'block', fontSize: 13, fontWeight: 700, color: 'var(--text)', marginBottom: 6 }}>
+          <Card className="rounded-md p-6 shadow-none">
+            <Label className="mb-1.5 block text-[13px] font-bold text-foreground">
               Título da Notícia *
-            </label>
-            <input
+            </Label>
+            <Input
               type="text"
               value={titulo}
               onChange={handleTituloChange}
               placeholder="Ex: Paróquia celebra novenário com grande participação dos fiéis"
-              style={{
-                width: '100%',
-                padding: '12px 14px',
-                fontSize: 16,
-                fontWeight: 600,
-                border: '1.5px solid var(--gray-border)',
-                borderRadius: 'var(--radius-sm)',
-                outline: 'none',
-              }}
+              className="h-auto border-[1.5px] border-input px-3.5 py-3 text-base font-semibold focus-visible:border-primary focus-visible:ring-[3px] focus-visible:ring-primary/10"
               required
             />
 
             {/* Slug URL */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 12, fontSize: 12, color: 'var(--text-light)' }}>
+            <div className="mt-3 flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
               <span>Link permanente:</span>
-              <span style={{ color: 'var(--bordo)', fontWeight: 600 }}>/noticias/</span>
+              <span className="font-semibold text-primary">/noticias/</span>
               {slugManual ? (
-                <input
+                <Input
                   type="text"
                   value={slug}
                   onChange={(e) => setSlug(gerarSlugLocal(e.target.value))}
-                  style={{
-                    padding: '4px 8px',
-                    fontSize: 12,
-                    borderRadius: 4,
-                    border: '1px solid #d1d5db',
-                    color: 'var(--text)',
-                  }}
+                  className="h-auto w-auto rounded px-2 py-1 text-xs text-foreground"
                 />
               ) : (
-                <code style={{ background: '#f3f4f6', padding: '2px 6px', borderRadius: 4, color: '#374151' }}>
+                <code className="rounded bg-muted px-1.5 py-0.5 text-soft">
                   {slug || 'slug-automatico'}
                 </code>
               )}
               <button
                 type="button"
                 onClick={() => setSlugManual(!slugManual)}
-                style={{
-                  background: 'none',
-                  border: 'none',
-                  color: '#6b7280',
-                  cursor: 'pointer',
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: 4,
-                  fontSize: 11,
-                  padding: 2,
-                }}
+                className="inline-flex cursor-pointer items-center gap-1 p-0.5 text-[11px] text-gray-500"
                 title={slugManual ? 'Bloquear slug automático' : 'Editar slug manualmente'}
               >
                 {slugManual ? <Lock size={12} /> : <Unlock size={12} />}
                 {slugManual ? 'Bloquear' : 'Editar'}
               </button>
             </div>
-          </div>
+          </Card>
 
           {/* Subtítulo / Resumo */}
-          <div style={{ background: '#fff', padding: 24, borderRadius: 'var(--radius-md)', border: '1px solid var(--cream-dark)' }}>
-            <label style={{ display: 'block', fontSize: 13, fontWeight: 700, color: 'var(--text)', marginBottom: 6 }}>
+          <Card className="rounded-md p-6 shadow-none">
+            <Label className="mb-1.5 block text-[13px] font-bold text-foreground">
               Subtítulo / Breve Descrição (Opcional)
-            </label>
-            <textarea
+            </Label>
+            <Textarea
               value={subtitulo}
               onChange={(e) => setSubtitulo(e.target.value)}
               placeholder="Uma linha de introdução que aparece logo abaixo do título na notícia..."
               rows={2}
-              style={{
-                width: '100%',
-                padding: '10px 14px',
-                fontSize: 14,
-                border: '1.5px solid var(--gray-border)',
-                borderRadius: 'var(--radius-sm)',
-                outline: 'none',
-                resize: 'vertical',
-              }}
+              className="resize-y border-[1.5px] border-input px-3.5 py-2.5 text-sm"
             />
-            <p style={{ fontSize: 11, color: 'var(--text-light)', margin: '4px 0 0' }}>
+            <p className="mt-1 text-[11px] text-muted-foreground">
               Utilizado na página individual e nos cards de destaque. Se vazio, o sistema extrai o começo do texto.
             </p>
-          </div>
+          </Card>
 
           {/* Editor de Conteúdo */}
-          <div style={{ background: '#fff', padding: 24, borderRadius: 'var(--radius-md)', border: '1px solid var(--cream-dark)' }}>
-            <label style={{ display: 'block', fontSize: 13, fontWeight: 700, color: 'var(--text)', marginBottom: 8 }}>
+          <Card className="rounded-md p-6 shadow-none">
+            <Label className="mb-2 block text-[13px] font-bold text-foreground">
               Conteúdo da Notícia *
-            </label>
+            </Label>
             <RichTextEditor
               value={conteudo}
               onChange={(novoHtml) => setConteudo(novoHtml)}
               placeholder="Escreva a notícia completa aqui. Use a barra para formatar títulos, negrito, listas e adicionar fotos..."
             />
-          </div>
+          </Card>
         </div>
 
         {/* Coluna Lateral (Configurações e Metadados) */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+        <div className="flex flex-col gap-5">
           {/* Card: Status e Publicação */}
-          <div style={{ background: '#fff', padding: 20, borderRadius: 'var(--radius-md)', border: '1px solid var(--cream-dark)' }}>
-            <h3 style={{ fontSize: 14, fontWeight: 700, color: 'var(--text)', margin: '0 0 16px', display: 'flex', alignItems: 'center', gap: 8 }}>
-              <Calendar size={16} color="var(--bordo)" /> Publicação
+          <Card className={cardClass}>
+            <h3 className={cardTitleClass}>
+              <Calendar size={16} className="text-primary" /> Publicação
             </h3>
 
             {/* Status */}
-            <div style={{ marginBottom: 16 }}>
-              <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: 'var(--text-light)', marginBottom: 4 }}>
-                Status
-              </label>
-              <select
-                value={status}
-                onChange={(e) => setStatus(e.target.value)}
-                style={{
-                  width: '100%',
-                  padding: '8px 12px',
-                  borderRadius: 6,
-                  border: '1.5px solid var(--gray-border)',
-                  fontSize: 13,
-                  background: '#fff',
-                }}
-              >
+            <div className="mb-4">
+              <Label className={smallLabel}>Status</Label>
+              <Select value={status} onChange={(e) => setStatus(e.target.value)} className="h-auto w-full px-3 py-2">
                 <option value="rascunho">Rascunho (Privado)</option>
                 <option value="publicada">Publicada (Visível a todos)</option>
                 <option value="agendada">Agendada</option>
                 <option value="arquivada">Arquivada</option>
-              </select>
+              </Select>
             </div>
 
             {/* Data de publicação */}
-            <div style={{ marginBottom: 16 }}>
-              <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: 'var(--text-light)', marginBottom: 4 }}>
-                Data de Publicação
-              </label>
-              <input
+            <div className="mb-4">
+              <Label className={smallLabel}>Data de Publicação</Label>
+              <Input
                 type="datetime-local"
                 value={publicadoEm}
                 onChange={(e) => setPublicadoEm(e.target.value)}
-                style={{
-                  width: '100%',
-                  padding: '8px 10px',
-                  borderRadius: 6,
-                  border: '1.5px solid var(--gray-border)',
-                  fontSize: 12,
-                }}
+                className="h-auto rounded-md border-[1.5px] border-input px-2.5 py-2 text-xs"
               />
-              <small style={{ fontSize: 11, color: 'var(--text-light)' }}>
+              <small className="text-[11px] text-muted-foreground">
                 Se vazio ao publicar, usa a data/hora atual.
               </small>
             </div>
 
             {/* Destaque */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 0', borderTop: '1px solid #f3f4f6' }}>
+            <div className="flex items-center gap-2.5 border-t border-gray-100 py-2.5">
               <input
                 type="checkbox"
                 id="check-destaque"
                 checked={destaque}
                 onChange={(e) => setDestaque(e.target.checked)}
-                style={{ width: 16, height: 16, accentColor: 'var(--bordo)', cursor: 'pointer' }}
+                className="size-4 cursor-pointer accent-primary"
               />
-              <label htmlFor="check-destaque" style={{ fontSize: 13, fontWeight: 600, color: 'var(--text)', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6 }}>
-                <Star size={14} color="#b89a5a" fill={destaque ? '#b89a5a' : 'none'} />
+              <Label htmlFor="check-destaque" className="flex cursor-pointer items-center gap-1.5 text-[13px] text-foreground">
+                <Star size={14} className="text-accent" fill={destaque ? 'currentColor' : 'none'} />
                 Notícia em Destaque
-              </label>
+              </Label>
             </div>
-          </div>
+          </Card>
 
           {/* Card: Imagem de Capa */}
-          <div style={{ background: '#fff', padding: 20, borderRadius: 'var(--radius-md)', border: '1px solid var(--cream-dark)' }}>
-            <h3 style={{ fontSize: 14, fontWeight: 700, color: 'var(--text)', margin: '0 0 16px', display: 'flex', alignItems: 'center', gap: 8 }}>
-              <Upload size={16} color="var(--bordo)" /> Imagem de Capa
+          <Card className={cardClass}>
+            <h3 className={cardTitleClass}>
+              <Upload size={16} className="text-primary" /> Imagem de Capa
             </h3>
 
             {imagemCapaPreview ? (
-              <div style={{ position: 'relative', borderRadius: 8, overflow: 'hidden', border: '1px solid #e5e7eb', marginBottom: 12 }}>
+              <div className="relative mb-3 overflow-hidden rounded-lg border border-gray-200">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   src={imagemCapaPreview}
                   alt="Prévia da capa"
-                  style={{ width: '100%', height: 160, objectFit: 'cover', display: 'block' }}
+                  className="block h-40 w-full object-cover"
                 />
                 <button
                   type="button"
                   onClick={handleRemoverCapa}
-                  style={{
-                    position: 'absolute',
-                    top: 8,
-                    right: 8,
-                    background: 'rgba(0,0,0,0.7)',
-                    color: '#fff',
-                    border: 'none',
-                    borderRadius: '50%',
-                    width: 26,
-                    height: 26,
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    cursor: 'pointer',
-                  }}
+                  className="absolute right-2 top-2 flex size-[26px] cursor-pointer items-center justify-center rounded-full bg-black/70 text-white"
                   title="Remover capa"
                 >
                   <X size={14} />
@@ -441,21 +357,13 @@ export default function NoticiaForm({ noticia = null, categorias = [], autorPadr
             ) : (
               <div
                 onClick={() => fileInputRef.current?.click()}
-                style={{
-                  border: '2px dashed #d1d5db',
-                  borderRadius: 8,
-                  padding: '24px 16px',
-                  textAlign: 'center',
-                  cursor: 'pointer',
-                  background: '#fafafa',
-                  marginBottom: 12,
-                }}
+                className="mb-3 cursor-pointer rounded-lg border-2 border-dashed border-gray-300 bg-neutral-50 px-4 py-6 text-center"
               >
-                <Upload size={24} style={{ margin: '0 auto 8px', color: '#9ca3af' }} />
-                <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--bordo)', display: 'block' }}>
+                <Upload size={24} className="mx-auto mb-2 text-gray-400" />
+                <span className="block text-[13px] font-semibold text-primary">
                   Clique para selecionar capa
                 </span>
-                <small style={{ fontSize: 11, color: '#9ca3af' }}>JPG, PNG ou WEBP (máx. 10MB)</small>
+                <small className="text-[11px] text-gray-400">JPG, PNG ou WEBP (máx. 10MB)</small>
               </div>
             )}
 
@@ -463,44 +371,31 @@ export default function NoticiaForm({ noticia = null, categorias = [], autorPadr
               ref={fileInputRef}
               type="file"
               accept="image/*"
-              style={{ display: 'none' }}
+              className="hidden"
               onChange={handleFileChange}
             />
-          </div>
+          </Card>
 
           {/* Card: Categoria e Autor */}
-          <div style={{ background: '#fff', padding: 20, borderRadius: 'var(--radius-md)', border: '1px solid var(--cream-dark)' }}>
-            <h3 style={{ fontSize: 14, fontWeight: 700, color: 'var(--text)', margin: '0 0 16px', display: 'flex', alignItems: 'center', gap: 8 }}>
-              <FileText size={16} color="var(--bordo)" /> Metadados
+          <Card className={cardClass}>
+            <h3 className={cardTitleClass}>
+              <FileText size={16} className="text-primary" /> Metadados
             </h3>
 
             {/* Categoria */}
-            <div style={{ marginBottom: 16 }}>
-              <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: 'var(--text-light)', marginBottom: 4 }}>
-                Categoria
-              </label>
-              <select
-                value={categoriaId}
-                onChange={(e) => setCategoriaId(e.target.value)}
-                style={{
-                  width: '100%',
-                  padding: '8px 12px',
-                  borderRadius: 6,
-                  border: '1.5px solid var(--gray-border)',
-                  fontSize: 13,
-                  background: '#fff',
-                }}
-              >
+            <div className="mb-4">
+              <Label className={smallLabel}>Categoria</Label>
+              <Select value={categoriaId} onChange={(e) => setCategoriaId(e.target.value)} className="h-auto w-full px-3 py-2">
                 <option value="">Sem categoria</option>
                 {categorias.map((cat) => (
                   <option key={cat.id} value={cat.id}>
                     {cat.nome}
                   </option>
                 ))}
-              </select>
+              </Select>
               <Link
                 href="/admin/noticias/categorias"
-                style={{ fontSize: 11, color: 'var(--bordo)', textDecoration: 'none', display: 'inline-block', marginTop: 4 }}
+                className="mt-1 inline-block text-[11px] text-primary"
               >
                 + Gerenciar categorias
               </Link>
@@ -508,24 +403,16 @@ export default function NoticiaForm({ noticia = null, categorias = [], autorPadr
 
             {/* Autor */}
             <div>
-              <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: 'var(--text-light)', marginBottom: 4 }}>
-                Nome do Autor / Pastoral
-              </label>
-              <input
+              <Label className={smallLabel}>Nome do Autor / Pastoral</Label>
+              <Input
                 type="text"
                 value={autorNome}
                 onChange={(e) => setAutorNome(e.target.value)}
                 placeholder="Ex: Pascom, Padre Raimundo..."
-                style={{
-                  width: '100%',
-                  padding: '8px 12px',
-                  borderRadius: 6,
-                  border: '1.5px solid var(--gray-border)',
-                  fontSize: 13,
-                }}
+                className={fieldClass}
               />
             </div>
-          </div>
+          </Card>
         </div>
       </div>
     </form>

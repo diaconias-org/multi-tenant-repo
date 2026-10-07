@@ -5,7 +5,7 @@ import { obterNoticiaPorId } from '@/services/noticia.service';
 import { listarCategorias } from '@/services/categoria.service';
 import AdminHeader from '@/components/admin/AdminHeader';
 import NoticiaForm from '@/components/admin/noticias/NoticiaForm';
-import styles from '@/components/admin/admin.module.css';
+import { AdminPage } from '@/components/admin/AdminLayout';
 
 export const metadata = {
   title: 'Editar Notícia – Painel Administrativo',
@@ -32,13 +32,13 @@ export default async function EditarNoticiaPage({ params }) {
   });
 
   return (
-    <div className={styles.page}>
+    <AdminPage>
       <AdminHeader usuarioNome={session.user.name} usuarioEmail={session.user.email} />
       <NoticiaForm
         noticia={noticia}
         categorias={categorias}
         autorPadrao={session.user.name}
       />
-    </div>
+    </AdminPage>
   );
 }

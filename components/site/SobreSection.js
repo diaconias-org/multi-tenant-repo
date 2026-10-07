@@ -2,19 +2,25 @@
 
 import { useState } from 'react';
 import { ChevronDown, ChevronUp } from 'lucide-react';
-import styles from '@/app/home.module.css';
+import { cn } from '@/lib/utils';
+import { Button } from '@/components/ui/button';
+import { SectionContainer, SectionHeading } from '@/components/site/Section';
 
 export default function SobreSection() {
   const [expanded, setExpanded] = useState(false);
 
   return (
-    <section className={styles.sobre} id="sobre">
-      <div className={styles.sectionInner}>
-        <span className={styles.sectionEyebrow}>Nossa História</span>
-        <h2 className={styles.sectionTitle}>Sobre a Diaconia</h2>
-        
-        <div className={`${styles.sobreContentWrapper} ${expanded ? styles.expanded : ''}`}>
-          <div className={styles.sobreText}>
+    <section className="border-y border-border bg-card py-20" id="sobre">
+      <SectionContainer>
+        <SectionHeading eyebrow="Nossa História" title="Sobre a Diaconia" />
+
+        <div
+          className={cn(
+            'relative overflow-hidden transition-[max-height] duration-[600ms] ease-[cubic-bezier(0.4,0,0.2,1)]',
+            expanded ? 'max-h-[3000px]' : 'max-h-[280px]'
+          )}
+        >
+          <div className="text-justify text-[15.5px] leading-[1.8] text-soft [&_p]:mb-[18px] [&_p:last-child]:mb-0">
             <p>O município de Curralinhos, localizado a 80 km de Teresina, foi criado em 1995. O nome &quot;Curralinho&quot; tem origem na cultura popular dos vaqueiros, que conduziam o gado até currais situados onde hoje é o Centro da Cidade. A agricultura familiar e a criação de caprinos, bovinos e suínos constituíam as principais fontes de sustento das famílias nas regiões conhecidas como Forquilha, Caldeirão e Pedra da Onça.</p>
 
             <p>A partir da década de 1960, a população da área começou a crescer quando Raimundo Cícero Oliveira adquiriu uma grande quantidade de terras e fundou o primeiro comércio, ainda em território do município de Monsenhor Gil. Seu desejo era que ali se formasse a sede de uma cidade.</p>
@@ -40,12 +46,15 @@ export default function SobreSection() {
             <p>Outras pastorais atuantes são as pastorais do Dízimo e da Família, onde realizam a conscientização dos fiéis para a devolução do dízimo e também de ações de graças, que envolvem arrecadação de alimentos e outros mantimentos para famílias carentes da região.</p>
           </div>
 
-          {!expanded && <div className={styles.sobreFadeOut}></div>}
+          {!expanded && (
+            <div className="pointer-events-none absolute inset-x-0 bottom-0 h-[120px] bg-gradient-to-b from-card/0 to-card to-90%"></div>
+          )}
         </div>
 
-        <div className={styles.sobreBtnWrapper}>
-          <button 
-            className={styles.btnExpandir}
+        <div className="relative z-[2] mt-6 flex justify-center">
+          <Button
+            variant="outline"
+            className="h-auto rounded-full border-[1.5px] border-input bg-secondary px-6 py-2.5 text-sm font-bold text-primary shadow-none hover:border-accent hover:bg-border"
             onClick={() => setExpanded(!expanded)}
           >
             {expanded ? (
@@ -53,10 +62,10 @@ export default function SobreSection() {
             ) : (
               <>Ler mais <ChevronDown size={16} /></>
             )}
-          </button>
+          </Button>
         </div>
 
-      </div>
+      </SectionContainer>
     </section>
   );
 }

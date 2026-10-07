@@ -3,9 +3,20 @@
 import { useState, useRef } from 'react';
 import Link from 'next/link';
 import { Heart, ClipboardCopy, CheckCircle2, CloudUpload, FileText, X } from 'lucide-react';
-import styles from './page.module.css';
+import { cn } from '@/lib/utils';
+import { Button, buttonVariants } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 
 const PIX_KEY = process.env.NEXT_PUBLIC_PIX_KEY || '86995982235';
+
+const headerBtnClass = cn(
+  buttonVariants({ variant: 'outline' }),
+  'h-auto rounded-full border-[1.5px] border-input px-[18px] py-[9px] text-[13px] text-soft shadow-none hover:-translate-y-px hover:border-primary hover:shadow-soft'
+);
+
+const fieldClass =
+  'h-auto border-[1.5px] border-input px-3.5 py-[11px] text-sm placeholder:opacity-70 focus-visible:border-primary focus-visible:ring-[3px] focus-visible:ring-primary/10';
 
 export default function ComprovantePage() {
   const [nome, setNome]             = useState('');
@@ -117,22 +128,22 @@ export default function ComprovantePage() {
   return (
     <>
       {/* HEADER */}
-      <header className={styles.header}>
-        <div className={styles.headerInner}>
-          <div className={styles.brand}>
-            <div className={styles.logoCircle}>
+      <header className="sticky top-0 z-[100] border-b border-border bg-card shadow-soft">
+        <div className="mx-auto flex max-w-[860px] items-center justify-between gap-4 px-6 py-3.5">
+          <div className="flex items-center gap-[13px]">
+            <div className="flex size-[46px] shrink-0 items-center justify-center rounded-full border-2 border-input bg-gradient-to-br from-muted to-border text-primary">
               <svg viewBox="0 0 24 24" fill="currentColor" width="20" height="20">
                 <path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4z"/>
               </svg>
             </div>
-            <div className={styles.brandText}>
-              <span className={styles.eyebrow}>Devolução do Dízimo</span>
-              <span className={styles.brandName}>Diaconia Territorial</span>
+            <div className="flex flex-col">
+              <span className="text-[10px] font-semibold uppercase tracking-[1.8px] text-primary">Devolução do Dízimo</span>
+              <span className="text-[14.5px] font-bold text-foreground">Diaconia Territorial</span>
             </div>
           </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-            <Link href="/" className={styles.btnHeaderPix} style={{ textDecoration: 'none' }}>← Início</Link>
-            <button className={styles.btnHeaderPix} onClick={() => document.getElementById('pix-section').scrollIntoView({ behavior: 'smooth', block: 'center' })}>
+          <div className="flex items-center gap-2.5">
+            <Link href="/" className={headerBtnClass}>← Início</Link>
+            <button className={headerBtnClass} onClick={() => document.getElementById('pix-section').scrollIntoView({ behavior: 'smooth', block: 'center' })}>
               <Heart size={16} fill="currentColor" /> Devolva seu dízimo
             </button>
           </div>
@@ -140,28 +151,31 @@ export default function ComprovantePage() {
       </header>
 
       {/* HERO */}
-      <section className={styles.hero}>
-        <p className={styles.heroEyebrow}>Um gesto de comunhão</p>
-        <h1 className={styles.heroTitle}>Diaconia Territorial São Raimundo Nonato</h1>
-        <p className={styles.heroDesc}>
+      <section className="mx-auto max-w-[620px] px-6 pb-10 pt-16 text-center max-[600px]:[&_h1]:text-[26px]">
+        <p className="mb-3.5 block text-[11.5px] font-semibold uppercase tracking-[2.5px] text-primary">Um gesto de comunhão</p>
+        <h1 className="mb-[18px] font-heading text-[clamp(28px,4.5vw,46px)] font-bold leading-[1.2] tracking-[-0.5px] text-foreground">Diaconia Territorial São Raimundo Nonato</h1>
+        <p className="mx-auto max-w-[480px] text-[15px] leading-[1.75] text-soft">
           Copie a chave Pix abaixo para realizar a devolução do dízimo.
           Depois, envie o comprovante pelo WhatsApp.
         </p>
       </section>
 
       {/* CARD PRINCIPAL */}
-      <main className={styles.container}>
-        <div className={styles.card}>
+      <main className="mx-auto mb-[60px] max-w-[780px] px-5">
+        <div className="overflow-hidden rounded-[32px] border border-border bg-card shadow-card">
 
           {/* CHAVE PIX NO TOPO */}
-          <section className={styles.pixTopSection} id="pix-section" style={{ marginBottom: 24 }}>
-            <div className={styles.pixBox}>
-              <div className={styles.pixBoxInner}>
+          <section className="mb-6 px-8 pt-8 max-[600px]:px-5" id="pix-section">
+            <div className="mb-[18px] rounded-md border-[1.5px] border-accent-light bg-[linear-gradient(135deg,color-mix(in_oklab,var(--accent)_8%,white),color-mix(in_oklab,var(--accent)_16%,white))] px-6 py-5">
+              <div className="flex items-center justify-between gap-4 max-[600px]:flex-col max-[600px]:items-start max-[600px]:gap-3">
                 <div>
-                  <p className={styles.pixLabel}>Chave Pix</p>
-                  <p className={styles.pixValue}>{PIX_KEY}</p>
+                  <p className="mb-[5px] text-[10px] font-bold uppercase tracking-[2px] text-accent">Chave Pix</p>
+                  <p className="text-[28px] font-bold tabular-nums text-foreground max-[600px]:text-[22px]">{PIX_KEY}</p>
                 </div>
-                <button className={styles.btnToqueCopiar} onClick={copyPix}>
+                <button
+                  className="inline-flex shrink-0 items-center gap-[7px] whitespace-nowrap rounded-full border-[1.5px] border-accent-light bg-card px-4 py-[9px] text-[12.5px] font-semibold text-accent transition-all duration-250 hover:-translate-y-px hover:border-accent hover:bg-accent hover:text-white"
+                  onClick={copyPix}
+                >
                   <ClipboardCopy size={18} /> Toque para copiar
                 </button>
               </div>
@@ -169,9 +183,9 @@ export default function ComprovantePage() {
           </section>
 
           {/* PASSOS */}
-          <section className={styles.stepsSection}>
-            <h2 className={styles.cardTitle}>Como realizar a devolução</h2>
-            <div className={styles.stepsGrid}>
+          <section className="px-8 pb-8 pt-9 max-[600px]:px-5">
+            <h2 className="mb-7 text-center text-[17px] font-bold text-foreground">Como realizar a devolução</h2>
+            <div className="flex flex-wrap justify-center gap-2.5 max-[600px]:gap-2">
               {[
                 'Copiar a chave Pix',
                 'Abrir o app do seu banco e fazer o Pix',
@@ -179,45 +193,49 @@ export default function ComprovantePage() {
                 'Salvar o comprovante',
                 'Voltar ao site',
               ].map((label, i) => (
-                <div key={i} className={styles.stepItem}>
-                  <div className={styles.stepNumber}>{i + 1}</div>
-                  <p className={styles.stepLabel}>{label}</p>
+                <div
+                  key={i}
+                  className="flex w-32 flex-col items-center gap-2.5 rounded-md border border-border bg-secondary px-3.5 py-[18px] text-center transition-all duration-250 hover:-translate-y-[3px] hover:border-primary hover:bg-primary/5 hover:shadow-soft max-[600px]:w-[calc(33%-6px)] max-[600px]:px-2 max-[600px]:py-3.5"
+                >
+                  <div className="flex size-[34px] items-center justify-center rounded-full bg-primary text-sm font-bold text-primary-foreground shadow-[0_3px_10px_color-mix(in_oklab,var(--primary)_30%,transparent)]">{i + 1}</div>
+                  <p className="text-[11.5px] font-semibold leading-[1.4] text-primary max-[600px]:text-[10.5px]">{label}</p>
                 </div>
               ))}
             </div>
           </section>
 
-          <div className={styles.divider} />
+          <div className="mx-7 h-px bg-muted" />
 
           {/* FORMULÁRIO DE REGISTRO E UPLOAD */}
-          <section className={styles.registerSection}>
-            <h2 className={styles.registerTitle}>Registrar informações</h2>
-            <p className={styles.registerDesc}>
+          <section className="px-8 pb-7 pt-8 max-[600px]:px-5">
+            <h2 className="mb-2 text-lg font-bold text-foreground">Registrar informações</h2>
+            <p className="mb-[22px] text-[13px] leading-[1.65] text-muted-foreground">
               Preencha seus dados para salvar nesta experiência.
               O acesso aos dados fica restrito ao administrador.
             </p>
 
             {enviado ? (
-              <div className={styles.successState}>
-                <div className={styles.successIcon}><CheckCircle2 size={48} /></div>
-                <h3>Comprovante salvo com sucesso!</h3>
-                <button 
-                  type="button" 
-                  className={styles.btnSecondary} 
+              <div className="mt-4 flex animate-scale-in flex-col items-center justify-center rounded-md border-[1.5px] border-green-200 bg-green-50 px-6 py-9 text-center">
+                <div className="mb-4 flex size-14 items-center justify-center rounded-full bg-green-500 text-white shadow-[0_4px_14px_rgb(34_197_94/0.3)]"><CheckCircle2 size={48} /></div>
+                <h3 className="mb-2 text-lg font-bold text-green-800">Comprovante salvo com sucesso!</h3>
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="mt-7 h-auto rounded-full border-[1.5px] border-green-300 bg-white px-[22px] py-3 text-[13.5px] text-green-800 shadow-soft hover:-translate-y-px hover:border-green-400 hover:bg-green-100 hover:text-green-800"
                   onClick={() => {
                     setEnviado(false);
                     setFeedback({ msg: '', tipo: '' });
                   }}
                 >
                   Enviar outro comprovante
-                </button>
+                </Button>
               </div>
             ) : (
-              <form onSubmit={handleSalvar} className={styles.form} noValidate>
-                <div className={styles.formRow}>
-                  <div className={styles.formGroup}>
-                    <label htmlFor="r-nome">Nome completo</label>
-                    <input
+              <form onSubmit={handleSalvar} className="flex flex-col gap-[18px]" noValidate>
+                <div className="grid grid-cols-2 gap-4 max-[600px]:grid-cols-1">
+                  <div className="flex flex-col gap-1.5">
+                    <Label htmlFor="r-nome">Nome completo</Label>
+                    <Input
                       id="r-nome"
                       type="text"
                       placeholder="Seu nome completo"
@@ -225,48 +243,53 @@ export default function ComprovantePage() {
                       onChange={e => setNome(e.target.value)}
                       autoComplete="name"
                       required
+                      className={fieldClass}
                     />
                   </div>
-                  <div className={styles.formGroup}>
-                    <label htmlFor="r-tel">Telefone (opcional)</label>
-                    <input
+                  <div className="flex flex-col gap-1.5">
+                    <Label htmlFor="r-tel">Telefone (opcional)</Label>
+                    <Input
                       id="r-tel"
                       type="tel"
                       placeholder="(86) 90000-0000"
                       value={telefone}
                       onChange={handleTelefoneChange}
                       maxLength={15}
+                      className={fieldClass}
                     />
                   </div>
                 </div>
                 
                 {/* Upload do comprovante */}
-                <div className={styles.uploadWrap} style={{ marginTop: 24, marginBottom: 12 }}>
-                  <span className={styles.uploadLabel}>Anexar comprovante</span>
+                <div className="mb-3 mt-6">
+                  <span className="mb-2 block text-[12.5px] font-semibold text-soft">Anexar comprovante</span>
                   <label
-                    className={`${styles.uploadArea} ${fotoFile ? styles.uploadHasFile : ''}`}
+                    className={cn(
+                      'relative flex min-h-[110px] w-full cursor-pointer items-center justify-center overflow-hidden rounded-md border-2 border-dashed border-input bg-secondary px-4 py-6 text-center transition-all duration-250 hover:border-primary hover:bg-primary/5 focus-visible:border-primary focus-visible:bg-primary/5 focus-visible:outline-none',
+                      fotoFile && 'border-primary bg-primary/5 p-0'
+                    )}
                     htmlFor="r-foto"
                     tabIndex={0}
                     onKeyDown={e => { if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); fileInputRef.current?.click(); }}}
                   >
                     {!fotoFile ? (
-                      <div className={styles.uploadPlaceholder}>
-                        <span className={styles.uploadIcon}><CloudUpload size={24} /></span>
-                        <span>Toque para selecionar a foto</span>
-                        <small>JPG, PNG ou PDF</small>
+                      <div className="flex flex-col items-center gap-2">
+                        <span className="text-primary/60"><CloudUpload size={24} /></span>
+                        <span className="text-[13.5px] font-semibold text-soft">Toque para selecionar a foto</span>
+                        <small className="text-[11.5px] text-muted-foreground">JPG, PNG ou PDF</small>
                       </div>
                     ) : fotoPreview === 'pdf' ? (
-                      <div className={styles.uploadPdf}>
+                      <div className="flex h-[140px] flex-col items-center justify-center gap-2.5 text-[13px] font-semibold text-soft">
                         <FileText size={42} color="#c0392b" />
                         <span>{fotoFile.name}</span>
                       </div>
                     ) : (
-                      <div className={styles.uploadPreview}>
+                      <div className="relative max-h-60 min-h-40 w-full overflow-hidden rounded-[calc(var(--radius-md)-2px)]">
                         {/* eslint-disable-next-line @next/next/no-img-element */}
-                        <img src={fotoPreview} alt="Prévia do comprovante" />
+                        <img src={fotoPreview} alt="Prévia do comprovante" className="block size-full object-cover" />
                         <button
                           type="button"
-                          className={styles.btnRemoveImg}
+                          className="absolute right-2.5 top-2.5 flex size-[30px] items-center justify-center rounded-full bg-black/55 text-white backdrop-blur-sm transition-all duration-250 hover:bg-primary/85"
                           onClick={removerFoto}
                           aria-label="Remover imagem"
                         ><X size={16} /></button>
@@ -279,26 +302,26 @@ export default function ComprovantePage() {
                     id="r-foto"
                     accept="image/*,application/pdf"
                     capture="environment"
-                    style={{ display: 'none' }}
+                    className="hidden"
                     onChange={handleFotoChange}
                   />
                 </div>
 
                 {feedback.msg && (
-                  <p className={`${styles.feedback} ${feedback.tipo === 'error' ? styles.feedbackError : styles.feedbackSuccess}`}>
+                  <p className={cn('text-[13px] font-medium', feedback.tipo === 'error' ? 'text-primary' : 'text-green-700')}>
                     {feedback.msg}
                   </p>
                 )}
-                <button type="submit" className={styles.btnSalvar} disabled={salvando}>
+                <Button type="submit" variant="brand" size="lg" className="w-full text-[15px] font-bold" disabled={salvando}>
                   {salvando ? 'Salvando…' : 'Salvar informações'}
-                </button>
+                </Button>
               </form>
             )}
             
-            <div className={styles.footerDeco} aria-hidden="true" style={{ marginTop: 36, marginBottom: 8 }}>
-              <span className={styles.decoLine} />
-              <span className={styles.decoHeart}><Heart size={16} fill="currentColor" /></span>
-              <span className={styles.decoLine} />
+            <div className="mb-2 mt-9 flex items-center justify-center gap-3" aria-hidden="true">
+              <span className="h-px max-w-[120px] flex-1 bg-border" />
+              <span className="text-primary opacity-60"><Heart size={16} fill="currentColor" /></span>
+              <span className="h-px max-w-[120px] flex-1 bg-border" />
             </div>
           </section>
 
@@ -306,12 +329,19 @@ export default function ComprovantePage() {
       </main>
 
       {/* FOOTER */}
-      <footer className={styles.footer}>
+      <footer className="p-6 text-center text-[12.5px] text-muted-foreground">
         <p>© {new Date().getFullYear()} Diaconia Territorial São Raimundo Nonato — Curralinhos, PI</p>
       </footer>
 
       {/* TOAST */}
-      <div className={`${styles.toast} ${toastVisible ? styles.toastShow : ''}`} role="status" aria-live="polite">
+      <div
+        className={cn(
+          'pointer-events-none fixed bottom-8 left-1/2 z-[9999] flex -translate-x-1/2 translate-y-20 items-center gap-[9px] whitespace-nowrap rounded-full bg-foreground px-[22px] py-3 text-sm font-semibold text-white opacity-0 shadow-card transition-[opacity,transform] duration-300 ease-[cubic-bezier(0.4,0,0.2,1)]',
+          toastVisible && 'translate-y-0 opacity-100'
+        )}
+        role="status"
+        aria-live="polite"
+      >
         <CheckCircle2 size={18} /> <span>{toastMsg}</span>
       </div>
     </>

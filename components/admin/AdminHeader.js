@@ -5,7 +5,17 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { signOut } from 'next-auth/react';
 import { Receipt, Newspaper, Tag, LogOut, ArrowLeft, Plus } from 'lucide-react';
-import styles from './admin.module.css';
+import { cn } from '@/lib/utils';
+import { Button, buttonVariants } from '@/components/ui/button';
+
+const tabClass = (active) =>
+  cn(
+    'inline-flex items-center gap-1.5 border-b-[3px] px-4 py-3 text-[13px] font-semibold text-white transition-opacity',
+    active ? 'border-accent opacity-100' : 'border-transparent opacity-75 hover:opacity-100'
+  );
+
+const headerBtnClass =
+  'h-auto rounded-full border-[1.5px] border-white/30 bg-white/15 px-[18px] py-[9px] text-[13px] text-white shadow-none hover:-translate-y-px hover:bg-white/25 hover:text-white';
 
 export default function AdminHeader({ usuarioNome, usuarioEmail }) {
   const pathname = usePathname();
@@ -21,89 +31,45 @@ export default function AdminHeader({ usuarioNome, usuarioEmail }) {
   const isCategorias = pathname.includes('/categorias');
 
   return (
-    <header className={styles.header}>
-      <div className={styles.headerInner}>
+    <header className="bg-gradient-to-br from-primary to-primary-dark text-primary-foreground">
+      <div className="mx-auto flex max-w-[1100px] items-center justify-between px-7 py-5 max-[600px]:flex-col max-[600px]:items-start max-[600px]:gap-3.5">
         <div>
-          <h1 className={styles.headerTitle}>Painel Administrativo</h1>
-          <p className={styles.headerSub}>Diaconia Territorial São Raimundo Nonato</p>
+          <h1 className="mb-0.5 font-heading text-2xl font-bold">Painel Administrativo</h1>
+          <p className="text-[13px] opacity-80">Diaconia Territorial São Raimundo Nonato</p>
         </div>
-        <div className={styles.headerRight}>
-          <div className={styles.userInfo}>
-            <span className={styles.userName}>{usuarioNome}</span>
-            <span className={styles.userEmail}>{usuarioEmail}</span>
+        <div className="flex items-center gap-4">
+          <div className="flex flex-col items-end">
+            <span className="text-sm font-bold text-white">{usuarioNome}</span>
+            <span className="text-[11.5px] text-white/65">{usuarioEmail}</span>
           </div>
           <Link
             href="/"
-            className={styles.btnLogout}
-            style={{ textDecoration: 'none', background: 'var(--cream)', color: 'var(--bordo)' }}
+            className={cn(
+              buttonVariants({ variant: 'outline' }),
+              'h-auto rounded-full border-[1.5px] border-white/30 bg-secondary px-[18px] py-[9px] text-[13px] text-primary shadow-none hover:-translate-y-px'
+            )}
           >
-            <ArrowLeft size={14} style={{ display: 'inline', marginRight: 4 }} />
+            <ArrowLeft size={14} />
             Início
           </Link>
-          <button
-            className={styles.btnLogout}
-            onClick={handleLogout}
-            disabled={saindo}
-          >
-            <LogOut size={14} style={{ display: 'inline', marginRight: 4 }} />
+          <Button variant="ghost" className={headerBtnClass} onClick={handleLogout} disabled={saindo}>
+            <LogOut size={14} />
             {saindo ? 'Saindo…' : 'Sair'}
-          </button>
+          </Button>
         </div>
       </div>
 
       {/* Barra de Navegação de Módulos */}
-      <div style={{ background: 'rgba(0,0,0,0.15)', borderTop: '1px solid rgba(255,255,255,0.1)' }}>
-        <div style={{ maxWidth: 1100, margin: '0 auto', padding: '0 28px', display: 'flex', gap: 12, alignItems: 'center', justifyContent: 'space-between' }}>
-          <nav style={{ display: 'flex', gap: 8 }}>
-            <Link
-              href="/admin"
-              style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: 6,
-                padding: '12px 16px',
-                fontSize: 13,
-                fontWeight: 600,
-                color: '#fff',
-                textDecoration: 'none',
-                borderBottom: isComprovantes ? '3px solid #b89a5a' : '3px solid transparent',
-                opacity: isComprovantes ? 1 : 0.75,
-              }}
-            >
+      <div className="border-t border-white/10 bg-black/15">
+        <div className="mx-auto flex max-w-[1100px] items-center justify-between gap-3 px-7">
+          <nav className="flex gap-2">
+            <Link href="/admin" className={tabClass(isComprovantes)}>
               <Receipt size={16} /> Comprovantes
             </Link>
-            <Link
-              href="/admin/noticias"
-              style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: 6,
-                padding: '12px 16px',
-                fontSize: 13,
-                fontWeight: 600,
-                color: '#fff',
-                textDecoration: 'none',
-                borderBottom: isNoticias ? '3px solid #b89a5a' : '3px solid transparent',
-                opacity: isNoticias ? 1 : 0.75,
-              }}
-            >
+            <Link href="/admin/noticias" className={tabClass(isNoticias)}>
               <Newspaper size={16} /> Notícias
             </Link>
-            <Link
-              href="/admin/noticias/categorias"
-              style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: 6,
-                padding: '12px 16px',
-                fontSize: 13,
-                fontWeight: 600,
-                color: '#fff',
-                textDecoration: 'none',
-                borderBottom: isCategorias ? '3px solid #b89a5a' : '3px solid transparent',
-                opacity: isCategorias ? 1 : 0.75,
-              }}
-            >
+            <Link href="/admin/noticias/categorias" className={tabClass(isCategorias)}>
               <Tag size={16} /> Categorias
             </Link>
           </nav>
@@ -111,19 +77,7 @@ export default function AdminHeader({ usuarioNome, usuarioEmail }) {
           {isNoticias && !pathname.endsWith('/novo') && (
             <Link
               href="/admin/noticias/novo"
-              style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: 6,
-                padding: '6px 14px',
-                background: '#b89a5a',
-                color: '#fff',
-                borderRadius: '9999px',
-                fontSize: 12,
-                fontWeight: 600,
-                textDecoration: 'none',
-                boxShadow: '0 2px 4px rgba(0,0,0,0.2)',
-              }}
+              className={cn(buttonVariants({ variant: 'gold' }), 'h-auto rounded-full px-3.5 py-1.5 text-xs shadow-[0_2px_4px_rgb(0_0_0/0.2)]')}
             >
               <Plus size={14} /> Nova Notícia
             </Link>
